@@ -1,3 +1,6 @@
 work
 *.pyc
 TODO
+boot_out.txt
+lib
+*secrets.py
