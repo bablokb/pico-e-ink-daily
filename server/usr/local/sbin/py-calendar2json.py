@@ -51,59 +51,68 @@ class Calendar2json(http.server.BaseHTTPRequestHandler):
   def _get_agenda(self):
     """ read agenda for all configured calendars """
 
+    self.start_of_day = datetime.datetime.combine(datetime.date.today(),
+                                         datetime.time.min)
+    self.end_of_day   = datetime.datetime.combine(datetime.date.today(),
+                                         datetime.time.max)
+
+    self.tz_local  = pytz.timezone(settings.TZ_NAME)
+    self.now = datetime.datetime.now(self.tz_local)
+
     entries = []
-    for cal_info in settings.cals:
-      self._get_agenda_for_cal(cal_info,entries)
+    for provider in settings.providers:
+      self._get_agenda_for_provider(provider,entries)
     entries.sort(key=itemgetter('start'))
     return entries
 
   # --- read agenda from caldav-server   --------------------------------------
 
-  def _get_agenda_for_cal(self,cal_info,entries):
+  def _get_agenda_for_provider(self,provider,entries):
     """ read agenda from caldav-server """
 
-    start_of_day = datetime.datetime.combine(datetime.date.today(),
-                                         datetime.time.min)
-    end_of_day   = datetime.datetime.combine(datetime.date.today(),
-                                         datetime.time.max)
-
-    tz_local  = pytz.timezone(settings.TZ_NAME)
-    now = datetime.datetime.now(tz_local)
-
-    client = caldav.DAVClient(url=cal_info["dav_url"],
-                                username=cal_info["dav_user"],
-                                password=cal_info["dav_pw"])
+    client = caldav.DAVClient(url=provider["dav_url"],
+                                username=provider["dav_user"],
+                                password=provider["dav_pw"])
 
     # get calendar by name
     calendars = client.principal().calendars()
-    cal = next(c for c in calendars if c.name == cal_info["cal_name"])
+    for cal_info in provider["cals"]:
+      for cal in calendars:
+        if cal.name == cal_info["cal_name"]:
+          self._get_items_for_cal(cal,cal_info,entries)
+
+  # --- read items for given calendar   ---------------------------------------
+
+  def _get_items_for_cal(self,cal,cal_info,entries):
+    """ read items from caldav-server """
 
     # extract relevant data
-    cal_events = cal.date_search(start=start_of_day,end=end_of_day,expand=True)
+    cal_events = cal.date_search(start=self.start_of_day,
+                                 end=self.end_of_day,expand=True)
     agenda_list = []
     for cal_event in cal_events:
       item = {}
       if hasattr(cal_event.instance, 'vtimezone'):
         tzinfo = cal_event.instance.vtimezone.gettzinfo()
       else:
-        tzinfo = tz_local
+        tzinfo = self.tz_local
       components = cal_event.instance.components()
       for component in components:
         if component.name != 'VEVENT':
           continue
         item['dtstart'] = self._get_timeattr(
-          component,'dtstart',start_of_day,tzinfo)
+          component,'dtstart',self.start_of_day,tzinfo)
         if hasattr(component,'duration'):
-          duration = getattr(component,'duration').value
+          duration = component.duration.value
           item['dtend'] = item['dtstart'] + duration
         else:
           item['dtend']   = self._get_timeattr(
-            component,'dtend',end_of_day,tzinfo)
-        if item['dtend'] < now:
+            component,'dtend',self.end_of_day,tzinfo)
+        if item['dtend'] < self.now:
           # ignore old events
           continue
         if item['dtend'].day != item['dtstart'].day:
-          item['dtend'] = end_of_day.replace(tzinfo=tz_local)
+          item['dtend'] = self.end_of_day
 
         for attr in ('summary', 'location'):
           if hasattr(component,attr):
