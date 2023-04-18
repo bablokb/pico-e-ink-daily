@@ -109,7 +109,8 @@ ui_settings = {
   "DAY_FONT":  "fonts/DejaVuSerif-Bold-60.bdf",
   "DATE_FONT": "fonts/DejaVuSans-BoldOblique-35.bdf",
   "TIME_FONT": "fonts/DejaVuSerif-BoldItalic-20.bdf",
-  "TEXT_FONT": "fonts/DejaVuSans-18.bdf",
+  "TEXT_FONT": "fonts/DejaVuSerif-20.bdf",
+  "STATUS_FONT": "fonts/DejaVuSerif-18.bdf",
   "MARGIN":    5,
   "PADDING":   3
   }
@@ -126,6 +127,7 @@ class Agenda:
     self._display     = display
     self._time_font   = bitmap_font.load_font(ui_settings["TIME_FONT"])
     self._text_font   = bitmap_font.load_font(ui_settings["TEXT_FONT"])
+    self._status_font = bitmap_font.load_font(ui_settings["STATUS_FONT"])
     self._margin      = ui_settings["MARGIN"]
     self._padding     = ui_settings["PADDING"]
 
@@ -193,7 +195,7 @@ class Agenda:
     """ create complete footer """
 
     footer = displayio.Group()
-    status = label.Label(self._text_font,
+    status = label.Label(self._status_font,
                          text=f"Updated: {values['now']}",
                          color=palette[BLACK],
                          background_color=palette[WHITE],
@@ -207,7 +209,7 @@ class Agenda:
     elif values['bat_level'] < 3.3:
       color = ORANGE
 
-    level = label.Label(self._text_font,
+    level = label.Label(self._status_font,
                         text=f"{values['bat_level']:0.1f}V",
                         color=color,
                         background_color=palette[WHITE],
