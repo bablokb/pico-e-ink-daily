@@ -13,18 +13,27 @@
 import time
 import gc
 import displayio
+from vectorio import Rectangle
 from adafruit_display_text import label
-from adafruit_display_shapes.rect import Rect
 from adafruit_display_shapes.line import Line
 from adafruit_bitmap_font import bitmap_font
 
-WHITE  = 0xFFFFFF
-BLACK  = 0x000000
-BLUE   = 0x0000FF
-GREEN  = 0x00FF00
-RED    = 0xFF0000
-YELLOW = 0xFFFF00
-ORANGE = 0xFFA500
+palette = displayio.Palette(7)
+palette[0] = 0xFFFFFF
+palette[1] = 0x000000
+palette[2] = 0x0000FF
+palette[3] = 0x00FF00
+palette[4] = 0xFF0000
+palette[5] = 0xFFFF00
+palette[6] = 0xFFA500
+
+WHITE  = 0
+BLACK  = 1
+BLUE   = 2
+GREEN  = 3
+RED    = 4
+YELLOW = 5
+ORANGE = 6
 
 # map color-names to (BG_COLOR,FG_COLOR)
 colors = {
@@ -139,16 +148,16 @@ class Agenda:
       bg_color = RED
     day_font = bitmap_font.load_font(ui_settings["DAY_FONT"])
     day = label.Label(day_font,text=values["day"],
-                      color=WHITE,
-                      background_color=bg_color,
+                      color=palette[WHITE],
+                      background_color=palette[bg_color],
                       background_tight=True,
                       anchor_point=(0,0),
                       anchored_position=(self._margin,self._margin))
-    
-    background = Rect(x=0,y=0,
-                      width=day.bounding_box[2]+2*self._margin,
-                      height=day.bounding_box[3]+2*self._margin,
-                fill=bg_color,outline=None,stroke=0)
+
+    background = Rectangle(pixel_shader=palette,x=0,y=0,
+                           width=day.bounding_box[2]+2*self._margin,
+                           height=day.bounding_box[3]+2*self._margin,
+                           color_index=bg_color)
     day_box.append(background)
     day_box.append(day)
     return (day_box,background.width,background.height)
@@ -165,13 +174,13 @@ class Agenda:
     day_box.y = 0
     header.append(day_box)
 
-    sep = Line(0,h,self._display.width,h,color=BLACK)
+    sep = Line(0,h,self._display.width,h,color=palette[BLACK])
     header.append(sep)
 
     date_font   = bitmap_font.load_font(ui_settings["DATE_FONT"])
     date = label.Label(date_font,text=values["date"],
-                      color=BLACK,
-                      background_color=WHITE,
+                      color=palette[BLACK],
+                      background_color=palette[WHITE],
                       background_tight=True,
                       anchor_point=(0,1),
                        anchored_position=(self._margin,h-self._margin))
@@ -186,13 +195,13 @@ class Agenda:
     footer = displayio.Group()
     status = label.Label(self._text_font,
                          text=f"Updated: {values['now']}",
-                         color=BLACK,
-                         background_color=WHITE,
+                         color=palette[BLACK],
+                         background_color=palette[WHITE],
                          base_alignment=True,
                          anchor_point=(0,1),
                          anchored_position=(self._margin,
                                             self._display.height-self._margin))
-    color = BLACK
+    color = palette[BLACK]
     if values['bat_level'] < 3.1:
       color = RED
     elif values['bat_level'] < 3.3:
@@ -201,7 +210,7 @@ class Agenda:
     level = label.Label(self._text_font,
                         text=f"{values['bat_level']:0.1f}V",
                         color=color,
-                        background_color=WHITE,
+                        background_color=palette[WHITE],
                         base_alignment=True,
                         anchor_point=(1,1),
                         anchored_position=(self._display.width-self._margin,
@@ -211,7 +220,7 @@ class Agenda:
     status.anchor_point = (0,level.bounding_box[3]/status.bounding_box[3])
     sep = Line(0,self._display.height-h,
                self._display.width,self._display.height-h,
-               color=BLACK)
+               color=palette[BLACK])
 
     footer.append(status)
     footer.append(level)
@@ -228,13 +237,13 @@ class Agenda:
     text = label.Label(self._text_font,
                        text="Mg",
                        background_tight=True,
-                       color=BLACK,
-                       background_color=WHITE)
+                       color=palette[BLACK],
+                       background_color=palette[WHITE])
     ts = label.Label(self._time_font,
                        text="23:59",
                        background_tight=True,
-                       color=BLACK,
-                       background_color=WHITE)
+                       color=palette[BLACK],
+                       background_color=palette[WHITE])
     h_box      = 2*max(text.bounding_box[3],ts.bounding_box[3]) + 3*self._padding
     txt_offset = self._margin + ts.bounding_box[2] + self._margin
 
@@ -246,10 +255,10 @@ class Agenda:
       bg_color,color = colors[event["color"]]
 
       # create background for entry
-      background = Rect(x=self._margin,y=y,
-                        width=self._display.width - 2*self._margin,
-                        height=h_box,
-                        fill=bg_color,outline=None,stroke=0)
+      background = Rectangle(pixel_shader=palette,x=self._margin,y=y,
+                             width=self._display.width - 2*self._margin,
+                             height=h_box,
+                             color_index=bg_color)
       entry.append(background)
 
       # create time-info (except for full-day events)
@@ -257,16 +266,16 @@ class Agenda:
         ts  = label.Label(self._time_font,
                           text=event["start"],
                           background_tight=True,
-                          color=color,
-                          background_color=bg_color,
+                          color=palette[color],
+                          background_color=palette[bg_color],
                           anchor_point=(0,0.5),
                           anchored_position=(self._margin,y+int(0.3*h_box)))
         entry.append(ts)
         ts  = label.Label(self._time_font,
                           text=event["end"],
                           background_tight=True,
-                          color=color,
-                          background_color=bg_color,
+                          color=palette[color],
+                          background_color=palette[bg_color],
                           anchor_point=(0,0.5),
                           anchored_position=(self._margin,y+int(0.75*h_box)))
         entry.append(ts)
@@ -275,8 +284,8 @@ class Agenda:
       text = label.Label(self._text_font,
                          text=event["summary"],
                          background_tight=True,
-                         color=color,
-                         background_color=bg_color,
+                         color=palette[color],
+                         background_color=palette[bg_color],
                          anchor_point=(0,0.5),
                          anchored_position=(txt_offset,y+int(0.3*h_box)))
       entry.append(text)
@@ -284,8 +293,8 @@ class Agenda:
         text = label.Label(self._text_font,
                            text=event["location"],
                            background_tight=True,
-                           color=color,
-                           background_color=bg_color,
+                           color=palette[color],
+                           background_color=palette[bg_color],
                            anchor_point=(0,0.5),
                            anchored_position=(txt_offset,y+int(0.75*h_box)))
         entry.append(text)
@@ -304,10 +313,10 @@ class Agenda:
 
     gc.collect()
     g = displayio.Group()
-    background = Rect(x=0,y=0,
-                      width=self._display.width,
-                      height=self._display.height,
-                      fill=WHITE,outline=None,stroke=0)
+    background = Rectangle(pixel_shader=palette,x=0,y=0,
+                           width=self._display.width,
+                           height=self._display.height,
+                           color_index=WHITE)
     g.append(background)
 
     (header,h) = self._get_header()
