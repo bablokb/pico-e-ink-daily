@@ -77,6 +77,8 @@ class App:
     agenda = Agenda(self.display)
     self.display.show(agenda.get_content())
     self.display.refresh()
+    if hasattr(self.display,"time_to_refresh"):
+      time.sleep(self.display.time_to_refresh)
 
   # --- shutdown device   ----------------------------------------------------
 
