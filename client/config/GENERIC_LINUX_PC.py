@@ -12,6 +12,18 @@ import sys
 import board
 from blinka_displayio_pygamedisplay import PyGameDisplay
 from hwconfig import HWConfig
+import socket
+import adafruit_requests
+
+class WifiImpl:
+  """ request-implementation using sockets from CPython """
+  def connect(self):
+    self._http = adafruit_requests.Session(socket)
+  def get(self,url):
+    response = self._http.get(url)
+    result = response.json()
+    response.close()
+    return result
 
 class PygameConfig(HWConfig):
   """ GENERIC_LINUX_PC specific configuration-class """
@@ -24,6 +36,10 @@ class PygameConfig(HWConfig):
   def bat_level(self):
     """ return battery level """
     return 3.6
+
+  def wifi(self):
+    """ return wifi-interface """
+    return WifiImpl()
 
   def shutdown(self):
     """ leave program """
