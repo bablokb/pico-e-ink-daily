@@ -10,6 +10,7 @@
 # ----------------------------------------------------------------------------
 
 import board
+from analogio import AnalogIn
 
 class HWConfig:
   def __init__(self):
@@ -25,6 +26,11 @@ class HWConfig:
       return level
     else:
       return 0.0
+
+  def wifi(self):
+    """ return wifi-interface """
+    from wifi_impl_builtin import WifiImpl
+    return WifiImpl()
 
   def get_display(self):
     """ return display """
