@@ -38,8 +38,19 @@ class Calendar2json(http.server.BaseHTTPRequestHandler):
   def do_GET(self):
     """ process get-requests """
 
-    data = self._get_agenda()
-    json_data = json.dumps(data,indent=2).encode(encoding='utf_8')
+    events,is_holiday = self._get_agenda()
+    now = datetime.datetime.now()
+
+    result = {
+      # time-related fields
+      "day": now.strftime("%d"),        # day of month
+      "weekday": now.strftime("%w") != "0" and not is_holiday,
+      "date": now.strftime("%A %x"),    # Weekday date
+      "now": now.strftime("%x %X"),     # date time
+      # event-data
+      "events": events
+      }
+    json_data = json.dumps(result,indent=2).encode(encoding='utf_8')
     self.send_response(http.HTTPStatus.OK.value)
     self.send_header("Content-Type","application/json")
     self.send_header("Content-Length",str(len(json_data)))
@@ -60,10 +71,11 @@ class Calendar2json(http.server.BaseHTTPRequestHandler):
     self.now = datetime.datetime.now(self.tz_local)
 
     entries = []
+    is_holiday = False
     for provider in settings.providers:
-      self._get_agenda_for_provider(provider,entries)
+      is_holiday = is_holiday or self._get_agenda_for_provider(provider,entries)
     entries.sort(key=itemgetter('start'))
-    return entries
+    return entries,is_holiday
 
   # --- read agenda from caldav-server   --------------------------------------
 
@@ -76,10 +88,13 @@ class Calendar2json(http.server.BaseHTTPRequestHandler):
 
     # get calendar by name
     calendars = client.principal().calendars()
+    is_holiday = False
     for cal_info in provider["cals"]:
       for cal in calendars:
         if cal.name == cal_info["cal_name"]:
-          self._get_items_for_cal(cal,cal_info,entries)
+          is_holiday = is_holiday or self._get_items_for_cal(cal,cal_info,entries)
+
+    return is_holiday
 
   # --- read items for given calendar   ---------------------------------------
 
@@ -89,6 +104,13 @@ class Calendar2json(http.server.BaseHTTPRequestHandler):
     # extract relevant data
     cal_events = cal.date_search(start=self.start_of_day,
                                  end=self.end_of_day,expand=True)
+
+    # check if current calendar is holiday-calendar and we have an event
+    if len(cal_events) and cal_info["is_holiday"]:
+      is_holiday = True
+    else:
+      is_holiday = False
+
     agenda_list = []
     for cal_event in cal_events:
       item = {}
@@ -129,6 +151,8 @@ class Calendar2json(http.server.BaseHTTPRequestHandler):
          "location": item['location'],
          "color": cal_info["cal_color"]
          })
+
+    return is_holiday
 
   # --- extract time attribute   ----------------------------------------------
 

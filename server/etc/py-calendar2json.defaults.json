@@ -9,11 +9,13 @@
       "cals": [
         {
           "cal_name"     : "mycal_1",
-          "cal_color"    : "white"
+          "cal_color"    : "white",
+          "is_holiday"   : false
         },
         {
           "cal_name"     : "mycal_2",
-          "cal_color"    : "gray"
+          "cal_color"    : "gray",
+          "is_holiday"   : false
         }
       ]
     },
@@ -24,11 +26,13 @@
       "cals": [
         {
           "cal_name"     : "mycal_3",
-          "cal_color"    : "green"
+          "cal_color"    : "green",
+          "is_holiday"   : false
         },
         {
           "cal_name"     : "mycal_4",
-          "cal_color"    : "red"
+          "cal_color"    : "red",
+          "is_holiday"   : true
         }
       ]
     }
