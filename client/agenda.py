@@ -46,65 +46,6 @@ colors = {
   "orange": (ORANGE,BLACK)
   }
 
-values = {
-  "day": "13",
-  "date": "Donnerstag 13.04.2023",
-  "now": "13.04.23 12:34",
-  "weekday": True,
-  "bat_level": 3.0,
-  "events": [
-     {
-       "start": "00:00",
-       "end": "23:59",
-       "summary": "Naturfototage",
-       "location": "",
-       "color": "green"
-     },
-     {
-       "start": "08:00",
-       "end": "09:00",
-       "summary": "Frühstück",
-       "location": "Küche",
-       "color": "green"
-     },
-     {
-       "start": "09:00",
-       "end": "10:00",
-       "summary": "Migrations-Check",
-       "location": "Meetingraum",
-       "color": "orange"
-     },
-     {
-       "start": "10:00",
-       "end": "11:00",
-       "summary": "Go-Live",
-       "location": "",
-       "color": "orange"
-     },
-     {
-       "start": "14:00",
-       "end": "16:00",
-       "summary": "Meeting",
-       "location": "Büro",
-       "color": "blue"
-     },
-     {
-       "start": "14:00",
-       "end": "15:00",
-       "summary": "Meeting2",
-       "location": "Büro",
-       "color": "red"
-     },
-     {
-       "start": "15:00",
-       "end": "16:00",
-       "summary": "Meeting3",
-       "location": "Büro",
-       "color": "yellow"
-     }
-   ]
-  }
-
 ui_settings = {
   "DAY_FONT":  "fonts/DejaVuSerif-Bold-60.bdf",
   "DATE_FONT": "fonts/DejaVuSans-BoldOblique-35.bdf",
@@ -144,12 +85,12 @@ class Agenda:
 
     day_box = displayio.Group()
 
-    if values["weekday"]:
+    if self._data["weekday"]:
       bg_color = BLACK
     else:
       bg_color = RED
     day_font = bitmap_font.load_font(ui_settings["DAY_FONT"])
-    day = label.Label(day_font,text=values["day"],
+    day = label.Label(day_font,text=self._data["day"],
                       color=palette[WHITE],
                       background_color=palette[bg_color],
                       background_tight=True,
@@ -180,7 +121,7 @@ class Agenda:
     header.append(sep)
 
     date_font   = bitmap_font.load_font(ui_settings["DATE_FONT"])
-    date = label.Label(date_font,text=values["date"],
+    date = label.Label(date_font,text=self._data["date"],
                       color=palette[BLACK],
                       background_color=palette[WHITE],
                       background_tight=True,
@@ -196,7 +137,7 @@ class Agenda:
 
     footer = displayio.Group()
     status = label.Label(self._status_font,
-                         text=f"Updated: {values['now']}",
+                         text=f"Updated: {self._data['now']}",
                          color=palette[BLACK],
                          background_color=palette[WHITE],
                          base_alignment=True,
@@ -204,13 +145,13 @@ class Agenda:
                          anchored_position=(self._margin,
                                             self._display.height-self._margin))
     color = palette[BLACK]
-    if values['bat_level'] < 3.1:
+    if self._data['bat_level'] < 3.1:
       color = RED
-    elif values['bat_level'] < 3.3:
+    elif self._data['bat_level'] < 3.3:
       color = ORANGE
 
     level = label.Label(self._status_font,
-                        text=f"{values['bat_level']:0.1f}V",
+                        text=f"{self._data['bat_level']:0.1f}V",
                         color=color,
                         background_color=palette[WHITE],
                         base_alignment=True,
@@ -252,7 +193,7 @@ class Agenda:
     # create all agenda-entries
     events = displayio.Group()
     y = 0
-    for event in values["events"]:
+    for event in self._data["events"]:
       entry = displayio.Group()
       bg_color,color = colors[event["color"]]
 
@@ -310,9 +251,10 @@ class Agenda:
 
   # --- create complete content   --------------------------------------------
 
-  def get_content(self):
+  def get_content(self,data):
     """ create content """
 
+    self._data = data
     gc.collect()
     g = displayio.Group()
     background = Rectangle(pixel_shader=palette,x=0,y=0,
