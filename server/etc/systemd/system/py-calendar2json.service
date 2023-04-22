@@ -1,0 +1,21 @@
+# --------------------------------------------------------------------------
+# Systemd service Definition for py-calendar2json.service.
+#
+# The service just starts the script /usr/local/sbin/py-calendar2json.py
+#
+# Author: Bernhard Bablok
+# License: GPL3
+#
+# Website: https://github.com/bablokb/py-calendar2json
+#
+# --------------------------------------------------------------------------
+
+[Unit]
+Description=Calendar2json server
+ 
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/py-calendar2json.py
+
+[Install]
+WantedBy=network.target
