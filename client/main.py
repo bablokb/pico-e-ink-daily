@@ -13,64 +13,7 @@
 
 # --- configuration constants   -------------------------------------------
 
-# test-data
-values = {
-  "day": "13",
-  "date": "Donnerstag 13.04.2023",
-  "now": "13.04.23 12:34",
-  "weekday": True,
-  "events": [
-     {
-       "start": "00:00",
-       "end": "23:59",
-       "summary": "Naturfototage",
-       "location": "",
-       "color": "green"
-     },
-     {
-       "start": "08:00",
-       "end": "09:00",
-       "summary": "Frühstück",
-       "location": "Küche",
-       "color": "green"
-     },
-     {
-       "start": "09:00",
-       "end": "10:00",
-       "summary": "Migrations-Check",
-       "location": "Meetingraum",
-       "color": "orange"
-     },
-     {
-       "start": "10:00",
-       "end": "11:00",
-       "summary": "Go-Live",
-       "location": "",
-       "color": "orange"
-     },
-     {
-       "start": "14:00",
-       "end": "16:00",
-       "summary": "Meeting",
-       "location": "Büro",
-       "color": "blue"
-     },
-     {
-       "start": "14:00",
-       "end": "15:00",
-       "summary": "Meeting2",
-       "location": "Büro",
-       "color": "red"
-     },
-     {
-       "start": "15:00",
-       "end": "16:00",
-       "summary": "Meeting3",
-       "location": "Büro",
-       "color": "yellow"
-     }
-   ]
-  }
+WITH_TEST_DATA = False
 
 # --- imports   -----------------------------------------------------------
 
@@ -131,8 +74,11 @@ class App:
       self._wifi.connect()
       self._data = self._wifi.get(secrets.url)
     except:
-      raise
-      self._data = values
+      if WITH_TEST_DATA:
+        from testdata import values
+        self._data = values
+      else:
+        raise
     self._data["bat_level"] = self._bat_level()
 
   # --- update display   -----------------------------------------------------
