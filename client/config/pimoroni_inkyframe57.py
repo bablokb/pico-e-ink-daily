@@ -21,4 +21,8 @@ class InkyFrame57Config(HWConfig):
     i2c = board.I2C()
     return PCF85063A(i2c)
 
+  def shutdown(self):
+    """ turn off power by pulling enable pin low """
+    board.ENABLE_DIO.value = 0
+
 config = InkyFrame57Config()
