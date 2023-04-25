@@ -10,7 +10,6 @@
 # ----------------------------------------------------------------------------
 
 import board
-from analogio import AnalogIn
 
 class HWConfig:
   def __init__(self):
@@ -20,6 +19,7 @@ class HWConfig:
   def bat_level(self):
     """ return battery level """
     if hasattr(board,"VOLTAGE_MONITOR"):
+      from analogio import AnalogIn
       adc = AnalogIn(board.VOLTAGE_MONITOR)
       level = adc.value *  3 * 3.3 / 65535
       adc.deinit()
