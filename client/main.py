@@ -33,37 +33,19 @@ except:
   hw_impl = builtins.__import__(config_file,None,None,["config"],0)
   print("using default implementation")
 
+from einkapp import EInkApp
 from config.secrets import secrets
 from agenda import Agenda
 
 # --- application class   ----------------------------------------------------
 
-class App:
+class App(EInkApp):
 
   # --- constructor   --------------------------------------------------------
 
   def __init__(self):
     """ constructor """
-
-    self._setup()          # setup hardware
-    self._update_rtc()     # update internal rtc from external rtc/internet
-
-  # --- setup hardware   -----------------------------------------------------
-
-  def _setup(self):
-    """ setup hardware """
-    
-    self.display    = hw_impl.config.get_display()
-    self._bat_level = hw_impl.config.bat_level
-    self._wifi      = hw_impl.config.wifi()
-    self._rtc_ext   = hw_impl.config.get_rtc_ext()
-    self._shutdown  = hw_impl.config.shutdown
-
-  # --- update rtc   ---------------------------------------------------------
-
-  def _update_rtc(self):
-    """ update rtc """
-    pass
+    super().__init__(with_rtc=False)
 
   # --- update data from server   --------------------------------------------
 
@@ -71,15 +53,10 @@ class App:
     """ update data """
 
     try:
-      self._wifi.connect()
-      self._data = self._wifi.get(secrets.url)
+      super().update_data()
     except:
-      if WITH_TEST_DATA:
-        from testdata import values
-        self._data = values
-      else:
-        raise
-    self._data["bat_level"] = self._bat_level()
+      # TODO: implement error-display
+      pass
 
   # --- update display   -----------------------------------------------------
 
@@ -87,10 +64,7 @@ class App:
     """ update display """
 
     agenda = Agenda(self.display)
-    self.display.show(agenda.get_content(self._data))
-    self.display.refresh()
-    if hasattr(self.display,"time_to_refresh"):
-      time.sleep(self.display.time_to_refresh)
+    super().update_display(agenda.get_content(self._data))
 
   # --- shutdown device   ----------------------------------------------------
 
@@ -102,23 +76,4 @@ class App:
 
 app = App()
 print(f"startup: {time.monotonic()-start:f}s")
-
-# pygame test-environment
-if hasattr(app.display,"check_quit"):
-  app.update_data()
-  app.update_display()
-  while True:
-    if app.display.check_quit():
-      app.shutdown()
-    time.sleep(0.5)
-
-# running on real hardware
-else:
-  while True:
-    start = time.monotonic()
-    app.update_data()
-    print(f"fetch_agenda: {time.monotonic()-start:f}s")
-    app.update_display()
-    print(f"update_display: {time.monotonic()-start:f}s")
-    app.shutdown()
-    time.sleep(60)
+app.run()
