@@ -9,7 +9,7 @@
 #
 # --------------------------------------------------------------------------
 
-PACKAGES="python3-pip python3-tz libxslt1.1"
+PACKAGES="python3-pip python3-tz python3-lxml libxslt1.1"
 PACKAGES_PIP="caldav"
 PROJECT="pico-e-ink-daily"
 
