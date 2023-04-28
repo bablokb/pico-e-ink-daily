@@ -19,6 +19,7 @@ from adafruit_display_shapes.line import Line
 from adafruit_bitmap_font import bitmap_font
 
 from ui_settings import UI_SETTINGS, COLORS, UI_COLOR_MAP, UI_PALETTE
+from frame import Frame
 
 # --- Agenda Class for layout   ----------------------------------------------
 
@@ -26,15 +27,19 @@ class Agenda:
 
   # --- constructor   --------------------------------------------------------
 
-  def __init__(self,display):
+  def __init__(self):
     """ constructor: create ressources """
 
-    self._display     = display
     self._time_font   = bitmap_font.load_font(UI_SETTINGS.TIME_FONT)
     self._text_font   = bitmap_font.load_font(UI_SETTINGS.TEXT_FONT)
-    self._status_font = bitmap_font.load_font(UI_SETTINGS.STATUS_FONT)
     self._margin      = UI_SETTINGS.MARGIN
     self._padding     = UI_SETTINGS.PADDING
+
+  # --- set display   --------------------------------------------------------
+
+  def set_display(self,display):
+    """ set display """
+    self._display = display
 
   # --- helper method for debugging   ----------------------------------------
 
@@ -68,71 +73,6 @@ class Agenda:
     day_box.append(background)
     day_box.append(day)
     return (day_box,background.width,background.height)
-
-  # --- create header   ------------------------------------------------------
-
-  def _get_header(self):
-    """ create complete header """
-
-    header = displayio.Group()
-    
-    day_box,w,h = self._get_day_box()
-    day_box.x = self._display.width-w
-    day_box.y = 0
-    header.append(day_box)
-
-    sep = Line(0,h,self._display.width,h,color=UI_PALETTE[COLORS.BLACK])
-    header.append(sep)
-
-    date_font   = bitmap_font.load_font(UI_SETTINGS.DATE_FONT)
-    date = label.Label(date_font,text=self._data["date"],
-                      color=UI_PALETTE[COLORS.BLACK],
-                      background_color=UI_PALETTE[COLORS.WHITE],
-                      background_tight=True,
-                      anchor_point=(0,1),
-                       anchored_position=(self._margin,h-self._margin))
-    header.append(date)
-    return (header,h)
-
-  # --- create footer   ------------------------------------------------------
-
-  def _get_footer(self):
-    """ create complete footer """
-
-    footer = displayio.Group()
-    status = label.Label(self._status_font,
-                         text=f"Updated: {self._data['now']}",
-                         color=UI_PALETTE[COLORS.BLACK],
-                         background_color=UI_PALETTE[COLORS.WHITE],
-                         base_alignment=True,
-                         anchor_point=(0,1),
-                         anchored_position=(self._margin,
-                                            self._display.height-self._margin))
-    color = UI_PALETTE[COLORS.BLACK]
-    if self._data['bat_level'] < 3.1:
-      color = COLORS.RED
-    elif self._data['bat_level'] < 3.3:
-      color = COLORS.ORANGE
-
-    level = label.Label(self._status_font,
-                        text=f"{self._data['bat_level']:0.1f}V",
-                        color=color,
-                        background_color=UI_PALETTE[COLORS.WHITE],
-                        base_alignment=True,
-                        anchor_point=(1,1),
-                        anchored_position=(self._display.width-self._margin,
-                                            self._display.height-self._margin))
-
-    h = max(status.bounding_box[3],level.bounding_box[3]) + 2*self._margin
-    status.anchor_point = (0,level.bounding_box[3]/status.bounding_box[3])
-    sep = Line(0,self._display.height-h,
-               self._display.width,self._display.height-h,
-               color=UI_PALETTE[COLORS.BLACK])
-
-    footer.append(status)
-    footer.append(level)
-    footer.append(sep)
-    return footer
 
   # --- create agenda events   -----------------------------------------------
 
@@ -219,15 +159,10 @@ class Agenda:
     """ create content """
 
     self._data = data
-    gc.collect()
-    g = displayio.Group()
-    background = Rectangle(pixel_shader=UI_PALETTE,x=0,y=0,
-                           width=self._display.width,
-                           height=self._display.height,
-                           color_index=COLORS.WHITE)
-    g.append(background)
+    frame = Frame(self._display,data)
 
-    (header,h) = self._get_header()
+    g = frame.get_group()
+    (header,h) = frame.get_header()
     g.append(header)
     gc.collect()
 
@@ -235,5 +170,5 @@ class Agenda:
     events.y = h + self._margin
     g.append(events)
 
-    g.append(self._get_footer())
+    g.append(frame.get_footer())
     return g
