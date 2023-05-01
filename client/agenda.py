@@ -153,6 +153,18 @@ class Agenda:
 
     return events
 
+  # --- placeholder image   --------------------------------------------------
+
+  def _get_no_events(self):
+    """ return centered image """
+
+    f = open(UI_SETTINGS.NO_EVENTS, "rb")
+    pic = displayio.OnDiskBitmap(f)
+    x = int((self._display.width-pic.width)/2)
+    y = int((self._display.height-pic.height)/2)
+    t = displayio.TileGrid(pic, x=x,y=y, pixel_shader=UI_PALETTE)
+    return t
+
   # --- create complete content   --------------------------------------------
 
   def get_content(self,data):
@@ -167,8 +179,12 @@ class Agenda:
     gc.collect()
 
     events = self._get_events()
-    events.y = h + self._margin
-    g.append(events)
+    if len(events):
+      events.y = h + self._margin
+      g.append(events)
+    else:
+      no_events = self._get_no_events()
+      g.append(no_events)
 
     g.append(frame.get_footer())
     return g
