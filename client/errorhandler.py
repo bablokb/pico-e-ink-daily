@@ -15,7 +15,7 @@ import traceback
 import displayio
 from vectorio import Rectangle
 
-from ui_settings import UI_PALETTE, COLORS
+from ui_settings import UI_SETTINGS, UI_PALETTE, COLORS
 
 class ErrorHandler:
 
@@ -51,7 +51,7 @@ class ErrorHandler:
                            color_index=COLORS.WHITE)
     g.append(background)
 
-    f = open("images/no-server-connection.bmp", "rb")
+    f = open(UI_SETTINGS.NO_NETWORK, "rb")
     pic = displayio.OnDiskBitmap(f)
     x = int((self._display.width-pic.width)/2)
     y = int((self._display.height-pic.height)/2)
