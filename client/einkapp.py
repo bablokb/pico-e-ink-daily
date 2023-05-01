@@ -68,13 +68,16 @@ class EInkApp:
   def update_data(self):
     """ update data """
 
+    start = time.monotonic()
     self._data = {}
     self._data["bat_level"] = self._bat_level()
     try:
       self._wifi.connect()
       self._data.update(self._wifi.get(secrets.url))
+      print(f"update_data (ok): {time.monotonic()-start:f}s")
     except Exception as ex:
       self._ehandler.on_exception(ex)
+      print(f"update_data (exception): {time.monotonic()-start:f}s")
       raise
 
   # --- update display   -----------------------------------------------------
@@ -82,12 +85,16 @@ class EInkApp:
   def update_display(self,content):
     """ update display """
 
+    start = time.monotonic()
     self._display.show(content)
+    print(f"update_display (show): {time.monotonic()-start:f}s")
+    start = time.monotonic()
     if hasattr(self._display,"time_to_refresh"):
       time.sleep(self._display.time_to_refresh)   # will be >0 only during dev.
     self._display.refresh()
     if hasattr(self._display,"time_to_refresh"):
       time.sleep(self._display.time_to_refresh)
+    print(f"update_display (refreshed): {time.monotonic()-start:f}s")
 
   # --- shutdown device   ----------------------------------------------------
 
@@ -115,10 +122,8 @@ class EInkApp:
     # running on real hardware
     else:
       try:
-        start = time.monotonic()
-        print(f"fetch_agenda: {time.monotonic()-start:f}s")
+        self.update_data()
         self.update_display(self._cprovider.get_content(self._data))
-        print(f"update_display: {time.monotonic()-start:f}s")
       except:
         self.update_display(self._ehandler.get_content())
       self.shutdown()
