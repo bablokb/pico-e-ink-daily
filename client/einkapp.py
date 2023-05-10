@@ -12,6 +12,7 @@
 
 import builtins
 import time
+import alarm
 import board
 
 # import board-specific implementations
@@ -74,6 +75,7 @@ class EInkApp:
     try:
       self._wifi.connect()
       self._data.update(self._wifi.get(secrets.url))
+      self._wifi.enabled = False
       print(f"update_data (ok): {time.monotonic()-start:f}s")
     except Exception as ex:
       self._ehandler.on_exception(ex)
@@ -90,10 +92,15 @@ class EInkApp:
     print(f"update_display (show): {time.monotonic()-start:f}s")
     start = time.monotonic()
     if hasattr(self._display,"time_to_refresh"):
-      time.sleep(self._display.time_to_refresh)   # will be >0 only during dev.
+      # ttr will be >0 only if system is on USB-power (running...)
+      time_alarm = alarm.time.TimeAlarm(
+        monotonic_time=time.monotonic()+self._display.time_to_refresh)
+      alarm.light_sleep_until_alarms(time_alarm)
     self._display.refresh()
     if hasattr(self._display,"time_to_refresh"):
-      time.sleep(self._display.time_to_refresh)
+      time_alarm = alarm.time.TimeAlarm(
+        monotonic_time=time.monotonic()+self._display.time_to_refresh)
+      alarm.light_sleep_until_alarms(time_alarm)
     print(f"update_display (refreshed): {time.monotonic()-start:f}s")
 
   # --- shutdown device   ----------------------------------------------------
