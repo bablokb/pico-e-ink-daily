@@ -53,6 +53,7 @@ class EInkApp:
     
     self._display   = hw_impl.config.get_display()
     self._bat_level = hw_impl.config.bat_level
+    self._led       = hw_impl.config.status_led
     self._wifi      = hw_impl.config.wifi()
     if with_rtc:
       self._rtc_ext   = hw_impl.config.get_rtc_ext()
@@ -102,6 +103,14 @@ class EInkApp:
         monotonic_time=time.monotonic()+self._display.time_to_refresh)
       alarm.light_sleep_until_alarms(time_alarm)
     print(f"update_display (refreshed): {time.monotonic()-start:f}s")
+
+  # --- blink status-led   ---------------------------------------------------
+
+  def blink(self,duration):
+    """ blink status-led once for the given duration """
+    self._led(1)
+    time.sleep(duration)
+    self._led(0)
 
   # --- shutdown device   ----------------------------------------------------
 

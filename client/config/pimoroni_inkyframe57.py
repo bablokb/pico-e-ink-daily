@@ -15,6 +15,13 @@ from hwconfig import HWConfig
 class InkyFrame57Config(HWConfig):
   """ InkyFrame 5.7 specific configuration-class """
 
+  def status_led(self,value):
+    """ set status LED """
+    if not hasattr(self,"_led"):
+      self._led = DigitalInOut(board.LED_ACT)
+      self._led.direction = Direction.OUTPUT
+    self._led.value = value
+
   def get_rtc_ext(self):
     """ return external rtc, if available """
     from pcf85063a import PCF85063A
