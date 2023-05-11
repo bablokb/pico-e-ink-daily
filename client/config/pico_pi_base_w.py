@@ -31,7 +31,7 @@ class PicoPiBaseConfig(HWConfig):
 
   def __init__(self):
     """ constructor """
-    self._done           = DigitalInOut(PIN_DONE)
+    self._done           = DigitalInOut(DONE_PIN)
     self._done.direction = Direction.OUTPUT
     self._done.value     = 0
 
