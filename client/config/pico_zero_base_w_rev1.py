@@ -8,4 +8,4 @@
 #
 # ----------------------------------------------------------------------------
 
-from pico_pi_base_w import config
+from config.pico_pi_base_w_rev1 import config
