@@ -14,7 +14,7 @@ from hwconfig import HWConfig
 import busio
 import displayio
 import adafruit_spd1656
-from digitalio import DigitalInOut, Direction, Pull
+from digitalio import DigitalInOut, Direction
 
 # pinout for Pimoroni Inky-Impression
 SCK_PIN   = board.SCLK
