@@ -12,11 +12,12 @@ import board
 
 from hwconfig import HWConfig
 import busio
+import displayio
 import adafruit_spd1656
 from digitalio import DigitalInOut, Direction, Pull
 
 # pinout for Pimoroni Inky-Impression
-SCK_PIN   = board.SCK
+SCK_PIN   = board.SCLK
 MOSI_PIN  = board.MOSI
 MISO_PIN  = board.MISO
 DC_PIN    = board.GPIO22
@@ -43,8 +44,9 @@ class PicoPiBaseConfig(HWConfig):
       spi, command=DC_PIN, chip_select=CS_PIN_D, reset=RST_PIN, baudrate=1000000
     )
     display = adafruit_spd1656.SPD1656(display_bus,busy_pin=BUSY_PIN,
-                                     width=600,height=448,rotation=180,
-                                     refresh_time=2)
+                                       width=600,height=448,
+                                       refresh_time=2,
+                                       seconds_per_frame=40)
     display.auto_refresh = False
     return display
 
