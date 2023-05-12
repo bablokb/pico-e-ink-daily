@@ -82,7 +82,7 @@ class Frame:
     header = displayio.Group()
     
     day_box,w,h = self._get_day_box()
-    day_box.x = self._display.width-w
+    day_box.x = self._display.width-w-self._margin
     day_box.y = 0
     header.append(day_box)
 
