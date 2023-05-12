@@ -11,6 +11,7 @@
 import board
 
 from hwconfig import HWConfig
+from digitalio import DigitalInOut, Direction
 
 class InkyFrame57Config(HWConfig):
   """ InkyFrame 5.7 specific configuration-class """
