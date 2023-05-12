@@ -92,17 +92,21 @@ class EInkApp:
     self._display.show(content)
     print(f"update_display (show): {time.monotonic()-start:f}s")
     start = time.monotonic()
-    if hasattr(self._display,"time_to_refresh"):
+    if self._display.time_to_refresh > 0.0:
       # ttr will be >0 only if system is on USB-power (running...)
+      print(f"time-to-refresh: {self._display.time_to_refresh}")
       time_alarm = alarm.time.TimeAlarm(
         monotonic_time=time.monotonic()+self._display.time_to_refresh)
       alarm.light_sleep_until_alarms(time_alarm)
     self._display.refresh()
-    if hasattr(self._display,"time_to_refresh"):
+    duration = time.monotonic()-start
+    print(f"update_display (refreshed): {duration:f}s")
+    update_time = self._display.time_to_refresh - duration
+    if update_time > 0.0:
+      print(f"update-time: {update_time}")
       time_alarm = alarm.time.TimeAlarm(
-        monotonic_time=time.monotonic()+self._display.time_to_refresh)
+        monotonic_time=time.monotonic()+update_time)
       alarm.light_sleep_until_alarms(time_alarm)
-    print(f"update_display (refreshed): {time.monotonic()-start:f}s")
 
   # --- blink status-led   ---------------------------------------------------
 
