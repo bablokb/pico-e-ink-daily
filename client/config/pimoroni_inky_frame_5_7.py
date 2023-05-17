@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# pimoroni_inkyframe_5_7.py: HW-config for Pimoroni InkyFrame 5.7
+# pimoroni_inky_frame_5_7.py: HW-config for Pimoroni InkyFrame 5.7
 #
 # Author: Bernhard Bablok
 # License: GPL3
