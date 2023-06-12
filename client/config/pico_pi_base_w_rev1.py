@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# pico_pi_base.py: HW-config for Pico Pi Base, pcb-en-control and Inky-Impression
+# pico_pi_base_rev1.py: config for Pico Pi Base, pcb-en-control and Inky-Impression
 #
 # Author: Bernhard Bablok
 # License: GPL3
@@ -53,9 +53,9 @@ class PicoPiBaseConfig(HWConfig):
   def get_rtc_ext(self):
     """ return external rtc, if available """
     try:
-      from adafruit_pcf8563 import PCF8563
+      from rtc_ext.pcf8563 import ExtPCF8563
       i2c = board.I2C()
-      return PCF8563(i2c)
+      return ExtPCF8563(i2c)
     except:
       return None
 

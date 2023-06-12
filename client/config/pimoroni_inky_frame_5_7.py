@@ -25,9 +25,9 @@ class InkyFrame57Config(HWConfig):
 
   def get_rtc_ext(self):
     """ return external rtc, if available """
-    from pcf85063a import PCF85063A
+    from rtc_ext.pcf85063a import ExtPCF85063A
     i2c = board.I2C()
-    return PCF85063A(i2c)
+    return ExtPCF85063A(i2c)
 
   def shutdown(self):
     """ turn off power by pulling enable pin low """
