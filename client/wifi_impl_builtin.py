@@ -60,7 +60,7 @@ class WifiImpl:
   def get(self,url):
     """ process get-request """
 
-    return self._requests.get(url).json()
+    return self._requests.get(url)
 
   # --- no specific deep-sleep mode   ---------------------------------------
 
