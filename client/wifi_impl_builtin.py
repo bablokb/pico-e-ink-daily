@@ -28,18 +28,21 @@ class WifiImpl:
     if not hasattr(secrets,'timeout'):
       secrets.timeout = None
 
+    self._radio = None
+
   # --- initialze and connect to AP and to remote-port   ---------------------
 
   def connect(self):
     """ initialize connection """
 
     import wifi
+    self._radio = wifi.radio
     print("connecting to %s" % secrets.ssid)
     retries = secrets.retry
     while True:
       try:
         wifi.radio.connect(secrets.ssid,
-                           secrets.password,
+                          secrets.password,
                            channel = secrets.channel,
                            timeout = secrets.timeout
                            )
@@ -55,12 +58,19 @@ class WifiImpl:
     pool = socketpool.SocketPool(wifi.radio)
     self._requests = adafruit_requests.Session(pool)
 
+  # --- return implementing radio   -----------------------------------------
+
+  @property
+  def radio(self):
+    """ return radio """
+    return self._radio
+
   # --- execute get-request   -----------------------------------------------
 
-  def get(self,url):
+  def get_json(self,url):
     """ process get-request """
 
-    return self._requests.get(url)
+    return self._requests.get(url).json()
 
   # --- no specific deep-sleep mode   ---------------------------------------
 
