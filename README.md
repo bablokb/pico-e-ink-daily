@@ -72,5 +72,25 @@ you have to create the file `config/secrets.py`:
     #secrets.channel   = 6       # optional
     #secrets.timeout   = 10      # optional
 
-    secrets.data_url = 'http://my-calendar2json-server-url'
     secrets.time_url = 'http://worldtimeapi.org/api/ip'
+
+    secrets.app_data = Settings()
+    secretes.app_data.data_url = 'http://my-calendar2json-server-url'
+
+The `app_data`-attribute contains application specific configs, in
+this case the url to the server-part.
+
+
+Hacking
+-------
+
+The main program consists of an instance of `EInkApp`. You pass an
+instance of your content-provider to the constructor. The content-provider
+is responsible to update and process data. Necessary methods are
+
+  - `update_data()`
+  - `process_data()`
+  - `handle_exception()`
+
+See file `client/agenda.py` for the implementation of the agenda-application.
+
