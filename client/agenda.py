@@ -13,6 +13,8 @@
 import time
 import gc
 import displayio
+import traceback
+
 from vectorio import Rectangle
 from adafruit_display_text import label
 from adafruit_display_shapes.line import Line
@@ -34,12 +36,7 @@ class Agenda:
     self._text_font   = bitmap_font.load_font(UI_SETTINGS.TEXT_FONT)
     self._margin      = UI_SETTINGS.MARGIN
     self._padding     = UI_SETTINGS.PADDING
-
-  # --- set display   --------------------------------------------------------
-
-  def set_display(self,display):
-    """ set display """
-    self._display = display
+    self.app          = None
 
   # --- helper method for debugging   ----------------------------------------
 
@@ -54,12 +51,12 @@ class Agenda:
 
     day_box = displayio.Group()
 
-    if self._data["weekday"]:
+    if self.app.data["weekday"]:
       bg_color = COLORS.BLACK
     else:
       bg_color = COLORS.RED
     day_font = bitmap_font.load_font(UI_SETTINGS.DAY_FONT)
-    day = label.Label(day_font,text=self._data["day"],
+    day = label.Label(day_font,text=self.app.data["day"],
                       color=UI_PALETTE[COLORS.WHITE],
                       background_color=UI_PALETTE[bg_color],
                       background_tight=True,
@@ -97,13 +94,13 @@ class Agenda:
     # create all agenda-entries
     events = displayio.Group()
     y = 0
-    for event in self._data["events"]:
+    for event in self.app.data["events"]:
       entry = displayio.Group()
       bg_color,color = UI_COLOR_MAP[event["color"]]
 
       # create background for entry
       background = Rectangle(pixel_shader=UI_PALETTE,x=self._margin,y=y,
-                             width=self._display.width - 2*self._margin,
+                             width=self.app.display.width - 2*self._margin,
                              height=h_box,
                              color_index=bg_color)
       entry.append(background)
@@ -160,18 +157,33 @@ class Agenda:
 
     f = open(UI_SETTINGS.NO_EVENTS, "rb")
     pic = displayio.OnDiskBitmap(f)
-    x = int((self._display.width-pic.width)/2)
-    y = int((self._display.height-pic.height)/2)
+    x = int((self.app.display.width-pic.width)/2)
+    y = int((self.app.display.height-pic.height)/2)
     t = displayio.TileGrid(pic, x=x,y=y, pixel_shader=UI_PALETTE)
     return t
 
+  # --- update data from server   --------------------------------------------
+
+  def update_data(self,app_data):
+    """ update data """
+
+    start = time.monotonic()
+    try:
+      if not self.app.wifi.radio or not self.app.wifi.radio.connected:
+        self.app.wifi.connect()
+      self.app.data.update(self.app.wifi.get_json(app_data.data_url))
+      self.app.wifi.radio.enabled = False
+      print(f"update_data (ok): {time.monotonic()-start:f}s")
+    except Exception as ex:
+      print(f"update_data (exception): {time.monotonic()-start:f}s")
+      raise
+
   # --- create complete content   --------------------------------------------
 
-  def get_content(self,data):
+  def  process_data(self):
     """ create content """
 
-    self._data = data
-    frame = Frame(self._display,data)
+    frame = Frame(self.app.display,self.app.data)
 
     g = frame.get_group()
     (header,h) = frame.get_header()
@@ -187,4 +199,27 @@ class Agenda:
       g.append(no_events)
 
     g.append(frame.get_footer())
-    return g
+    self.app.update_display(g)
+
+  # --- handle exception   ---------------------------------------------------
+
+  def handle_exception(self,ex):
+    """ handle exception """
+
+    traceback.print_exception(ex)
+
+    g = displayio.Group()
+    background = Rectangle(pixel_shader=UI_PALETTE,x=0,y=0,
+                           width=self.app.display.width,
+                           height=self.app.display.height,
+                           color_index=COLORS.WHITE)
+    g.append(background)
+
+    f = open(UI_SETTINGS.NO_NETWORK, "rb")
+    pic = displayio.OnDiskBitmap(f)
+    x = int((self.app.display.width-pic.width)/2)
+    y = int((self.app.display.height-pic.height)/2)
+    t = displayio.TileGrid(pic, x=x,y=y, pixel_shader=UI_PALETTE)
+    g.append(t)
+
+    self.app.update_display(g)

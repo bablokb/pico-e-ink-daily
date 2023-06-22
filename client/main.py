@@ -18,9 +18,8 @@ start = time.monotonic()
 
 from einkapp import EInkApp
 from agenda import Agenda                         # content-provider
-from errorhandler import ErrorHandler
 
-app = EInkApp(Agenda(),ErrorHandler(),with_rtc=False)
+app = EInkApp(Agenda(),with_rtc=False)
 app.blink(0.5)
 print(f"startup: {time.monotonic()-start:f}s")
 app.run()
