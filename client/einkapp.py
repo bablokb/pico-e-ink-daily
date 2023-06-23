@@ -95,10 +95,11 @@ class EInkApp:
     if not self.is_pygame:
       update_time = self.display.time_to_refresh - duration
       if update_time > 0.0:
-        print(f"update-time: {update_time}")
+        print(f"update-time: {update_time} (sleeping...)")
         time_alarm = alarm.time.TimeAlarm(
           monotonic_time=time.monotonic()+update_time)
         alarm.light_sleep_until_alarms(time_alarm)
+        print("update finished!")
 
   # --- blink status-led   ---------------------------------------------------
 
