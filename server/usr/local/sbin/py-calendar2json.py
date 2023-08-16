@@ -105,12 +105,6 @@ class Calendar2json(http.server.BaseHTTPRequestHandler):
     cal_events = cal.date_search(start=self.start_of_day,
                                  end=self.end_of_day,expand=True)
 
-    # check if current calendar is holiday-calendar and we have an event
-    if len(cal_events) and cal_info["is_holiday"]:
-      is_holiday = True
-    else:
-      is_holiday = False
-
     agenda_list = []
     for cal_event in cal_events:
       item = {}
@@ -142,6 +136,12 @@ class Calendar2json(http.server.BaseHTTPRequestHandler):
           else:
             item[attr] = ""
         agenda_list.append(item)
+
+    # check if current calendar is holiday-calendar and we have an event
+    if len(agenda_list) and cal_info["is_holiday"]:
+      is_holiday = True
+    else:
+      is_holiday = False
 
     for item in agenda_list:
       entries.append(
