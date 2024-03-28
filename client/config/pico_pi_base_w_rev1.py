@@ -12,6 +12,8 @@ import board
 
 from hwconfig import HWConfig
 import busio
+from adafruit_bus_device.i2c_device import I2CDevice
+import struct
 import displayio
 import adafruit_spd1656
 from digitalio import DigitalInOut, Direction
@@ -36,15 +38,23 @@ class PicoPiBaseConfig(HWConfig):
     self._done.direction = Direction.OUTPUT
     self._done.value     = 0
 
+  def _get_size(self):
+    """ try to read the eeprom """
+    i2c_device = I2CDevice(board.I2C(),EE_ADDR)
+    with i2c_device as i2c:
+      i2c.write(bytes([register])+bytes(data))
+
+
   def get_display(self):
     """ return display """
     displayio.release_displays()
+    width,height = self._get_size()
     spi = busio.SPI(SCK_PIN,MOSI=MOSI_PIN,MISO=MISO_PIN)
     display_bus = displayio.FourWire(
       spi, command=DC_PIN, chip_select=CS_PIN_D, reset=RST_PIN, baudrate=1000000
     )
     display = adafruit_spd1656.SPD1656(display_bus,busy_pin=BUSY_PIN,
-                                       width=600,height=448,
+                                       width=width,height=height,
                                        refresh_time=2,
                                        seconds_per_frame=40)
     display.auto_refresh = False
