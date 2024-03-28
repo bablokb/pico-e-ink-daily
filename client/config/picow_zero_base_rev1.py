@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# pico_zero_base.py: HW-config for Pico Zero Base and Inky-Impression
+# picow_zero_base.py: HW-config for Pico Zero Base and Inky-Impression
 #
 # Author: Bernhard Bablok
 # License: GPL3
@@ -8,4 +8,4 @@
 #
 # ----------------------------------------------------------------------------
 
-from config.pico_pi_base_w_rev1 import config
+from config.picow_pi_base_rev1 import config

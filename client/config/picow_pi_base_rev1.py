@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# pico_pi_base_rev1.py: config for Pico Pi Base, pcb-en-control and Inky-Impression
+# picow_pi_base_rev1.py: config for Pico Pi Base, pcb-en-control and Inky-Impression
 #
 # Author: Bernhard Bablok
 # License: GPL3
