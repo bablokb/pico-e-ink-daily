@@ -13,7 +13,7 @@ import time
 import socketpool
 import adafruit_requests
 
-from config.secrets import secrets
+from secrets import secrets
 
 class WifiImpl:
   """ Wifi-implementation for MCU with integrated wifi """
@@ -28,21 +28,33 @@ class WifiImpl:
     if not hasattr(secrets,'timeout'):
       secrets.timeout = None
 
-    self._radio = None
+    self._radio    = None
+    self._pool     = None
+    self._requests = None
+    self._socket   = None
 
   # --- initialze and connect to AP and to remote-port   ---------------------
 
   def connect(self):
     """ initialize connection """
 
-    import wifi
-    self._radio = wifi.radio
+    if not self._radio:
+      import wifi
+      self._radio = wifi.radio
+    if not self._radio.enabled:
+      self._radio.enabled = True
+      self._pool = None
+      self._requests = None
+
+    if self._pool:
+      return
+
     print("connecting to %s" % secrets.ssid)
     retries = secrets.retry
     while True:
       try:
-        wifi.radio.connect(secrets.ssid,
-                          secrets.password,
+        self._radio.connect(secrets.ssid,
+                           secrets.password,
                            channel = secrets.channel,
                            timeout = secrets.timeout
                            )
@@ -55,8 +67,16 @@ class WifiImpl:
         time.sleep(1)
         continue
     print("connected to %s" % secrets.ssid)
-    pool = socketpool.SocketPool(wifi.radio)
-    self._requests = adafruit_requests.Session(pool)
+    self._pool = socketpool.SocketPool(self._radio)
+    self._requests = None
+
+  # --- return requests-object   --------------------------------------------
+
+  def _get_request(self):
+    """ return requests-object """
+    if not self._requests:
+      self._requests = adafruit_requests.Session(self._pool)
+    return self._requests
 
   # --- return implementing radio   -----------------------------------------
 
@@ -67,10 +87,21 @@ class WifiImpl:
 
   # --- execute get-request   -----------------------------------------------
 
-  def get_json(self,url):
+  def get(self,url):
     """ process get-request """
+    self.connect()
+    print(f"wifi: get({url})")
+    return self._get_request().get(url)
 
-    return self._requests.get(url).json()
+  # --- execute transmit-command   ------------------------------------------
+
+  def sendto(self,data,udp_ip,udp_port):
+    """ send to given destination """
+    self.connect()
+    print(f"wifi: send to {udp_ip}:{udp_port}")
+    with self._pool.socket(family=socketpool.SocketPool.AF_INET,
+                           type=socketpool.SocketPool.SOCK_DGRAM) as socket:
+      socket.sendto(data,(udp_ip,udp_port))
 
   # --- no specific deep-sleep mode   ---------------------------------------
 
@@ -78,6 +109,6 @@ class WifiImpl:
     """ disable radio """
 
     try:                                       # wifi might not be imported
-      wifi.radio.enabled = False
+      self._radio.enabled = False
     except:
       pass

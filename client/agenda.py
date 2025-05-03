@@ -171,7 +171,7 @@ class Agenda:
     try:
       if not self.app.wifi.radio or not self.app.wifi.radio.connected:
         self.app.wifi.connect()
-      self.app.data.update(self.app.wifi.get_json(app_data.data_url))
+      self.app.data.update(self.app.wifi.get(app_data.data_url).json())
       self.app.wifi.radio.enabled = False
       print(f"update_data (ok): {time.monotonic()-start:f}s")
     except Exception as ex:
