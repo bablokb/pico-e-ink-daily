@@ -82,12 +82,7 @@ class EInkApp:
     """ update display """
 
     start = time.monotonic()
-    if self.is_pygame:
-      self.display.show(content)
-    else:
-      self.display.root_group = content
-    print(f"update_display (show): {time.monotonic()-start:f}s")
-    start = time.monotonic()
+    self.display.root_group = content
 
     if not self.is_pygame and self.display.time_to_refresh > 0.0:
       # ttr will be >0 only if system is on USB-power (running...)
@@ -96,18 +91,11 @@ class EInkApp:
         monotonic_time=time.monotonic()+self.display.time_to_refresh)
       alarm.light_sleep_until_alarms(time_alarm)
 
+    start = time.monotonic()
+    print(f"[{start:0.1f}] starting refresh")
     self.display.refresh()
     duration = time.monotonic()-start
-    print(f"update_display (refreshed): {duration:f}s")
-
-    if not self.is_pygame:
-      update_time = self.display.time_to_refresh - duration
-      if update_time > 0.0:
-        print(f"update-time: {update_time} (sleeping...)")
-        time_alarm = alarm.time.TimeAlarm(
-          monotonic_time=time.monotonic()+update_time)
-        alarm.light_sleep_until_alarms(time_alarm)
-        print("update finished!")
+    print(f"[{start+duration:0.1f}] update_display (refreshed): {duration:f}s")
 
   # --- blink status-led   ---------------------------------------------------
 
