@@ -58,7 +58,7 @@ secrets.py
 ----------
 
 For WLAN-credentials and other settings specific to you environment,
-you have to create the file `config/secrets.py`:
+you have to create the file `secrets.py`:
 
     class Settings:
       pass
@@ -73,12 +73,46 @@ you have to create the file `config/secrets.py`:
     #secrets.timeout   = 10      # optional
 
     secrets.time_url = 'http://worldtimeapi.org/api/ip'
+    secrets.net_update = True    # update time if necessary
 
     secrets.app_data = Settings()
-    secretes.app_data.data_url = 'http://my-calendar2json-server-url'
+    secrets.app_data.data_url = 'http://my-calendar2json-server-url'
+    secrets.app_data.time_table = ... # see below, optional
 
 The `app_data`-attribute contains application specific configs, in
-this case the url to the server-part.
+this case the url to the server-part and the time-table for automatic
+wakeup and refresh.
+
+
+Automatic Wakeup
+----------------
+
+To enable automatic wakeup (with refresh), you must define a time-table:
+
+    secrets.app_data.time_table = [
+      ((7,18,1),(0,59,15)),
+      ((7,18,1),(0,59,15)),
+      ((7,18,1),(0,59,15)),
+      ((7,18,1),(0,59,15)),
+      ((7,18,1),(0,59,15)),
+      (None,None),
+      (None,None)
+  ]
+
+The table must have one entry (line) for every day starting with Monday.
+The format is
+
+    ((h_start,h_end,h_inc),(m_start,m_end,m_inc))
+
+This defines an hourly range from h_start to h_end with and
+increment value (e.g. `1` for every hour). Within each hour, you define
+at which minutes from m_start to m_end the system wakes up.
+
+Note that all intervals are inclusive. In the example above the system
+starts from 07:00 to 18:45 every fifteen minutes on Monday to Friday.
+
+Also note that this is just an example. Updating an ACEP-e-ink every
+fifteen minutes is possible, but not recommended.
 
 
 Hacking

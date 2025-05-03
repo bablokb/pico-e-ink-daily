@@ -14,6 +14,12 @@ import builtins
 import time
 import board
 
+try:
+  import alarm
+except:
+  # pygame
+  pass
+
 # import board-specific implementations
 try:
   config_file = "config."+board.board_id.replace(".","_")
@@ -25,7 +31,7 @@ except:
   hw_impl = builtins.__import__(config_file,None,None,["config"],0)
   print("using default implementation")
 
-from config.secrets import secrets
+from secrets import secrets
 
 # --- application class   ----------------------------------------------------
 
@@ -37,6 +43,7 @@ class EInkApp:
     """ constructor """
 
     self._setup(with_rtc)  # setup hardware
+    self.blink(0.1)
     if with_rtc:
       self._rtc_ext.update()   # update internal rtc from external rtc/internet
     self._cprovider = contentprovider
@@ -53,8 +60,10 @@ class EInkApp:
     self._led       = hw_impl.config.status_led
     self.wifi      = hw_impl.config.wifi()
     if with_rtc:
-      self._rtc_ext = hw_impl.config.get_rtc_ext()
+      self._rtc_ext = hw_impl.config.get_rtc_ext(secrets.net_update)
       self._rtc_ext.wifi = self.wifi
+    else:
+      self._rtc_ext = None
     self._shutdown  = hw_impl.config.shutdown
 
   # --- update data from server   --------------------------------------------
@@ -81,7 +90,6 @@ class EInkApp:
     start = time.monotonic()
 
     if not self.is_pygame and self.display.time_to_refresh > 0.0:
-      import alarm
       # ttr will be >0 only if system is on USB-power (running...)
       print(f"time-to-refresh: {self.display.time_to_refresh}")
       time_alarm = alarm.time.TimeAlarm(
@@ -112,7 +120,10 @@ class EInkApp:
   # --- shutdown device   ----------------------------------------------------
 
   def shutdown(self):
-    """ turn off device """
+    """ turn off device after setting next wakeup """
+    if self._rtc_ext and getattr(secrets.app_data,"time_table",None):
+      wakeup = self._rtc_ext.get_table_alarm(secrets.app_data.time_table)
+      self._rtc_ext.set_alarm(wakeup)
     self._shutdown()
 
   # --- main application loop   ----------------------------------------------
@@ -140,4 +151,6 @@ class EInkApp:
       except Exception as ex:
         self._cprovider.handle_exception(ex)
       self.shutdown()
-      time.sleep(60)
+      print("update finished, entering endless loop")
+      while True:
+        time.sleep(60)
