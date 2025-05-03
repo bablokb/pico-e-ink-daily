@@ -31,6 +31,32 @@ class InkyFrame57Config(HWConfig):
 
   def shutdown(self):
     """ turn off power by pulling enable pin low """
+    self._wait_for_display()
     board.ENABLE_DIO.value = 0
+
+  def _wait_for_display(self):
+    """ wait for display update to finish """
+
+    # we check the busy-pin of the shift-register
+    import keypad, time
+    shift_reg = keypad.ShiftRegisterKeys(
+      clock = board.SWITCH_CLK,
+      data  = board.SWITCH_OUT,
+      latch = board.SWITCH_LATCH,
+      key_count = 8,
+      value_to_latch = True,
+      value_when_pressed = True
+    )
+
+    queue = shift_reg.events
+    while True:
+      if not len(queue):
+        time.sleep(0.1)
+        continue
+      ev = queue.get()
+      if ev.key_number == board.KEYCODES.INKY_BUS and ev.pressed:
+        # i.e. busy-pin is high, so no longer busy
+        shift_reg.deinit()
+        return
 
 config = InkyFrame57Config()
