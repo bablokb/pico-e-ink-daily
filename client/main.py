@@ -15,11 +15,10 @@
 
 import time
 start = time.monotonic()
-
+import supervisor
 from einkapp import EInkApp
 from agenda import Agenda                         # content-provider
 
-app = EInkApp(Agenda(),with_rtc=False)
-app.blink(0.5)
+app = EInkApp(Agenda(),with_rtc=True)
 print(f"startup: {time.monotonic()-start:f}s")
 app.run()
