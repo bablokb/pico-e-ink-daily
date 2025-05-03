@@ -23,11 +23,11 @@ class InkyFrame57Config(HWConfig):
       self._led.direction = Direction.OUTPUT
     self._led.value = value
 
-  def get_rtc_ext(self):
+  def get_rtc_ext(self,net_update=False):
     """ return external rtc, if available """
-    from rtc_ext.pcf85063a import ExtPCF85063A
+    from rtc_ext.ext_base import ExtBase
     i2c = board.I2C()
-    return ExtPCF85063A(i2c)
+    return ExtBase.create("PCF85063A",i2c,net_update=net_update)
 
   def shutdown(self):
     """ turn off power by pulling enable pin low """

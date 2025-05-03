@@ -60,12 +60,12 @@ class PicoPiBaseConfig(HWConfig):
     display.auto_refresh = False
     return display
 
-  def get_rtc_ext(self):
+  def get_rtc_ext(self,net_update=False):
     """ return external rtc, if available """
     try:
-      from rtc_ext.pcf8563 import ExtPCF8563
+      from rtc_ext.ext_base import ExtBase
       i2c = board.I2C()
-      return ExtPCF8563(i2c)
+      return ExtBase.create("PCF8563",i2c,net_update=net_update)
     except:
       return None
 

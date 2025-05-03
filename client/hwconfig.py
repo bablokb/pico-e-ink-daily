@@ -44,7 +44,7 @@ class HWConfig:
     """ return display """
     return board.DISPLAY
 
-  def get_rtc_ext(self):
+  def get_rtc_ext(self,net_update=False):
     """ return external rtc, if available """
     return None
 
