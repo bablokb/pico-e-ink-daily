@@ -4,4 +4,5 @@ TODO
 boot_out.txt
 lib
 *secrets.py
+hw_settings.py
 __pycache__
