@@ -12,10 +12,25 @@
 import board
 from digitalio import DigitalInOut, Direction
 
+try:
+  from hw_settings import hw_setting
+except:
+  pass
+
 class HWConfig:
   def __init__(self):
     """ constructor """
-    pass
+    self._display = None
+
+  def _get_attr(self,attrib):
+    """ get attribute from board or from settings """
+    value = getattr(board,attrib,None)
+    if value is None:
+      try:
+        value = getattr(hw_setting,attrib,None)
+      except:
+        pass
+    return value
 
   def status_led(self,value):
     """ set status LED """
@@ -42,7 +57,12 @@ class HWConfig:
 
   def get_display(self):
     """ return display """
-    return board.DISPLAY
+    if not self._display:
+      self._display = self._get_attr('DISPLAY')
+      if callable(self._display):
+        # a method (i.e. not from board-module), so call it
+        self._display = self._display(self)
+    return self._display
 
   def get_rtc_ext(self,net_update=False):
     """ return external rtc, if available """
