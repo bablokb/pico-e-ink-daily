@@ -115,6 +115,22 @@ Also note that this is just an example. Updating an ACEP-e-ink every
 fifteen minutes is possible, but not recommended.
 
 
+Hardware Configuration
+----------------------
+
+There are two sources for hardware configuration:
+
+  - a board-specific configuration file in `client/config/`
+  - a user/setup specific configuration file in `client/hw_settings.py`
+
+The name of the board-specific configuration file must be the same
+as the value returned by `board.board_id` (with '.' replaced by '_').
+For new boards, use one of the existing ones as a template.
+
+The user/setup specific configuration file has to provide an object
+`hw_setting`. Use one of the files `client/hw_settings_xxx.py` as a template.
+
+
 Hacking
 -------
 
