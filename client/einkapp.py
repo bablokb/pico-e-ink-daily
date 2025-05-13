@@ -14,23 +14,6 @@ import builtins
 import time
 import board
 
-try:
-  import alarm
-except:
-  # pygame
-  pass
-
-# import board-specific implementations
-try:
-  config_file = "config."+board.board_id.replace(".","_")
-  hw_impl = builtins.__import__(config_file,None,None,["config"],0)
-  print("using board-specific implementation")
-except:
-  raise
-  config_file = "config.def_config"
-  hw_impl = builtins.__import__(config_file,None,None,["config"],0)
-  print("using default implementation")
-
 from secrets import secrets
 
 # --- application class   ----------------------------------------------------
@@ -49,22 +32,47 @@ class EInkApp:
     self._cprovider = contentprovider
     self._cprovider.app = self
 
-  # --- setup hardware   -----------------------------------------------------
+  # --- get HAL   ------------------------------------------------------------
+
+  # Import HAL (hardware-abstraction-layer).
+  # This expects an object "impl" within the implementing hal_file.
+  # All hal implementations are within src/hal/. Filenames must be
+  # board.board_id.py, e.g. src/hal/pimoroni_inky_frame_5_7.py
+
+  def _get_hal(self):
+    """ read and return hal-object """
+
+    try:
+      hal_file = "hal."+board.board_id.replace(".","_")
+      hal = builtins.__import__(hal_file,None,None,["impl"],0)
+      self.msg("using board-specific implementation")
+    except Exception as ex:
+      self.msg(f"info: no board specific HAL")
+      hal_file = "hal.hal_default"
+      hal = builtins.__import__(hal_file,None,None,["impl"],0)
+      self.msg("info: using default implementation from HalBase")
+    return hal
 
   def _setup(self,with_rtc):
     """ setup hardware """
+
+    hal = self._get_hal()
     
-    self.display    = hw_impl.config.get_display()
+    self.display    = hal.impl.get_display()
     self.is_pygame  = hasattr(self.display,"check_quit")
-    self.bat_level  = hw_impl.config.bat_level
-    self._led       = hw_impl.config.status_led
-    self.wifi      = hw_impl.config.wifi()
+    self.bat_level  = hal.impl.bat_level
+    self.led        = hal.impl.led
+    self.keypad     = hal.impl.get_keypad()
+    self.wifi       = hal.impl.wifi(self._debug)
+    self._shutdown  = hal.impl.shutdown
+    self.sleep      = hal.impl.sleep
+    self._show      = hal.impl.show
     if with_rtc:
-      self._rtc_ext = hw_impl.config.get_rtc_ext(secrets.net_update)
-      self._rtc_ext.wifi = self.wifi
-    else:
-      self._rtc_ext = None
-    self._shutdown  = hw_impl.config.shutdown
+      self._rtc_ext = hal.impl.get_rtc_ext()
+      if self._rtc_ext:
+        self._rtc_ext.set_wifi(self.wifi)
+
+    gc.collect()
 
   # --- update data from server   --------------------------------------------
 
@@ -81,29 +89,19 @@ class EInkApp:
   def update_display(self,content):
     """ update display """
 
+    # and show content on screen
     start = time.monotonic()
-    self.display.root_group = content
-
-    if not self.is_pygame and self.display.time_to_refresh > 0.0:
-      # ttr will be >0 only if system is on USB-power (running...)
-      print(f"time-to-refresh: {self.display.time_to_refresh}")
-      time_alarm = alarm.time.TimeAlarm(
-        monotonic_time=time.monotonic()+self.display.time_to_refresh)
-      alarm.light_sleep_until_alarms(time_alarm)
-
-    start = time.monotonic()
-    print(f"[{start:0.1f}] starting refresh")
-    self.display.refresh()
+    self._show(content)
     duration = time.monotonic()-start
-    print(f"[{start+duration:0.1f}] update_display (refreshed): {duration:f}s")
+    self.msg(f"show (HAL): {duration:f}s")
 
   # --- blink status-led   ---------------------------------------------------
 
   def blink(self,duration):
     """ blink status-led once for the given duration """
-    self._led(1)
+    self.led(1)
     time.sleep(duration)
-    self._led(0)
+    self.led(0)
 
   # --- shutdown device   ----------------------------------------------------
 
