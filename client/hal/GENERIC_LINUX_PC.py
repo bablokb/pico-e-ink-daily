@@ -20,7 +20,6 @@ import time
 import board
 
 from blinka_displayio_pygamedisplay import PyGameDisplay
-from hwconfig import HWConfig
 import socket
 import adafruit_requests
 
