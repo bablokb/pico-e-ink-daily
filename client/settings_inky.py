@@ -73,4 +73,4 @@ def _get_display(config):
   return display
 
 hw_setting = Settings()
-hw_setting.display = _get_display
+hw_setting.DISPLAY = _get_display

@@ -47,5 +47,5 @@ def _get_display(config):
   display.auto_refresh = False
   return display
 
-hw_setting = Settings()
-hw_setting.display = _get_display
+hw_config = Settings()
+hw_config.DISPLAY = _get_display
