@@ -17,11 +17,9 @@ class HALInkyFrame57(HalBase):
 
   def _init_led(self,value):
     """ initialize LED/Neopixel """
-    """ set status LED """
     if not hasattr(self,"_led"):
       self._led = DigitalInOut(board.LED_ACT)
       self._led.direction = Direction.OUTPUT
-    self._led.value = value
 
   def get_rtc_ext(self,net_update=False):
     """ return external rtc, if available """
