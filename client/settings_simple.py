@@ -32,6 +32,24 @@ HEIGHT = 280
 class Settings:
   pass
 
+# network configuration   ----------------------------------------------------
+
+secrets = Settings()
+
+secrets.ssid      = 'my-ssid'
+secrets.password  = 'my-very-secret-password'
+secrets.retry     = 2
+secrets.debugflag = False
+#secrets.channel   = 6       # optional
+#secrets.timeout   = 10      # optional
+
+secrets.time_url = 'http://worldtimeapi.org/api/ip'
+secrets.net_update = True    # update time if necessary
+
+# hardware configuration (optional)  -----------------------------------------
+
+hw_config = Settings()
+
 # --- create display   ---------------------------------------------------
 
 def _get_display(config):
@@ -55,7 +73,6 @@ def _get_keypad(hal):
                      value_when_pressed=False,pull=True,
                      interval=0.1,max_events=4)
 
-hw_config = Settings()
 hw_config.DISPLAY = _get_display
 hw_config.get_keypad = _get_keypad
 
