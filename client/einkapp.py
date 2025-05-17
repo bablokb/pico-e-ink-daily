@@ -14,6 +14,19 @@ import builtins
 import time
 import board
 
+try:
+  import gc
+except:
+  # create dummy gc
+  class _gc:
+    @classmethod
+    def collect(cls):
+      pass
+    @classmethod
+    def mem_free(cls):
+      return 0
+  gc = _gc()
+
 from settings import secrets, app_config
 
 # --- application class   ----------------------------------------------------
@@ -25,9 +38,10 @@ class EInkApp:
   def __init__(self,contentprovider,with_rtc=True):
     """ constructor """
 
+    self._debug = getattr(app_config, "debug", False)
     self._setup(with_rtc)  # setup hardware
     self.blink(0.1)
-    if with_rtc:
+    if self._rtc_ext:
       self._rtc_ext.update()   # update internal rtc from external rtc/internet
     self._cprovider = contentprovider
     self._cprovider.app = self
@@ -73,6 +87,13 @@ class EInkApp:
         self._rtc_ext.set_wifi(self.wifi)
 
     gc.collect()
+
+  # --- print debug-message   ------------------------------------------------
+
+  def msg(self,text):
+    """ print (debug) message """
+    if self._debug:
+      print(text)
 
   # --- update data from server   --------------------------------------------
 
@@ -137,6 +158,6 @@ class EInkApp:
       except Exception as ex:
         self._cprovider.handle_exception(ex)
       self.shutdown()
-      print("update finished, entering endless loop")
+      self.msg("update finished, entering endless loop")
       while True:
         time.sleep(60)

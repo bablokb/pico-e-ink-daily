@@ -7,19 +7,9 @@
 # Website: https://github.com/bablokb/pico-e-ink-daily
 # ----------------------------------------------------------------------------
 
-# display-sizes
-#   - Inky wHat:            400x300
-#   - Inky-Impression 4":   640x400
-#   - Inky-Impression 5.7": 600x448
-#   - Inky-Impression 7.3": 800x480
-#   - Inky-Frame 5.7":      600x448
-#   - Badger2040W:          296x128
-
 import sys
 import time
-import board
 
-from blinka_displayio_pygamedisplay import PyGameDisplay
 import socket
 import adafruit_requests
 
@@ -28,18 +18,16 @@ from hal.hal_base import HalBase
 class WifiImpl:
   """ request-implementation using sockets from CPython """
 
-  def __init__(self):
+  def __init__(self,debug=False):
     """ constructor """
+    self.debug = debug
     self._http = None
 
   def connect(self):
     self._http = adafruit_requests.Session(socket)
 
-  def get_json(self,url):
-    response = self._http.get(url)
-    result = response.json()
-    response.close()
-    return result
+  def get(self,url):
+    return self._http.get(url)
 
   @property
   def radio(self):
@@ -69,8 +57,7 @@ class HalPygame(HalBase):
 
   def wifi(self,debug=False):
     """ return wifi-interface """
-    from wifi_helper_generic import WifiHelper
-    return WifiHelper(debug=debug)
+    return WifiImpl(debug=debug)
 
   def shutdown(self):
     """ leave program """
