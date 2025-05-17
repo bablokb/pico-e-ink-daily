@@ -24,6 +24,7 @@ DC_PIN    = board.GPIO22
 RST_PIN   = board.GPIO27
 CS_PIN    = board.CE0
 BUSY_PIN  = board.GPIO17
+BTN_PINS  = [board.GPIO5, board.GPIO6, board.GPIO16, board.GPIO24]
 
 class Settings:
   pass
@@ -72,5 +73,18 @@ def _get_display(config):
   display.auto_refresh = False
   return display
 
-hw_setting = Settings()
-hw_setting.DISPLAY = _get_display
+def _get_keypad(hal):
+  """ return keypad for Inky-Impression """
+  import keypad
+  return keypad.Keys(BTN_PINS,
+                     value_when_pressed=False,pull=True,
+                     interval=0.1,max_events=4)
+
+hw_config = Settings()
+hw_config.DISPLAY = _get_display
+hw_config.get_keypad = _get_keypad
+
+# key-mappings (value is index into BTN_PINS)
+hw_config.key_on  = 0 # pin A
+hw_config.key_upd = 1 # pin B
+hw_config.key_off = 2 # pin C

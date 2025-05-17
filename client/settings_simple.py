@@ -24,6 +24,7 @@ DC_PIN    = board.GP22
 RST_PIN   = board.GP27
 CS_PIN    = board.GP12
 BUSY_PIN  = board.GP17
+BTN_PINS  = [board.GP5, board.GP6, board.GP16]
 
 WIDTH = 320
 HEIGHT = 280
@@ -47,5 +48,18 @@ def _get_display(config):
   display.auto_refresh = False
   return display
 
+def _get_keypad(hal):
+  """ return keypad """
+  import keypad
+  return keypad.Keys(BTN_PINS,
+                     value_when_pressed=False,pull=True,
+                     interval=0.1,max_events=4)
+
 hw_config = Settings()
 hw_config.DISPLAY = _get_display
+hw_config.get_keypad = _get_keypad
+
+# key-mappings (value is index into BTN_PINS)
+hw_config.key_on  = 0 # pin A
+hw_config.key_upd = 1 # pin B
+hw_config.key_off = 2 # pin C

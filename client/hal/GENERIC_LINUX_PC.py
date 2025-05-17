@@ -56,7 +56,7 @@ class HalPygame(HalBase):
 
   def show(self,content):
     """ show and refresh the display """
-    self._display.show(content)
+    self._display.root_group = content
     self._display.refresh()
 
   def bat_level(self):
@@ -86,5 +86,9 @@ class HalPygame(HalBase):
       if self._display.check_quit():
         sys.exit(0)
       time.sleep(0.1)
+
+  def check_key(self,name):
+    """ check if key is pressed (currently not supported) """
+    return False
 
 impl = HalPygame()

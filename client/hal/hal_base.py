@@ -146,6 +146,16 @@ class HalBase:
   def get_keypad(self):
     """ return configured keypad """
     try:
-      return hw_config.get_keypad(self)
+      if not self._keypad:
+        self._keypad = hw_config.get_keypad(self)
+      return self._keypad
     except:
       return None
+
+  def check_key(self,name):
+    """ check if key is pressed """
+
+    nr = getattr(hw_config,name)
+    queue = self.get_keypad.events
+    event = queue.get()
+    return event and event.pressed and event.key_number == nr
