@@ -88,3 +88,17 @@ hw_config.get_keypad = _get_keypad
 hw_config.key_on  = 0 # pin A
 hw_config.key_upd = 1 # pin B
 hw_config.key_off = 2 # pin C
+
+# app configuration   --------------------------------------------------------
+
+app_config = Settings()
+app_config.data_url = 'http://my-calendar2json-server-url'
+app_config.time_table = [
+  ((9,9,1),(0,0,1)),          # from 9 to 9 every hour, i.e. only at 9
+  ((9,9,1),(0,0,1)),          # from minute 0 to 0 every minute, i.e. only at 0
+  ((9,9,1),(0,0,1)),
+  ((9,9,1),(0,0,1)),
+  ((9,9,1),(0,0,1)),
+  (None,None),
+  (None,None)
+ ]
