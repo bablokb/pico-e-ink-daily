@@ -2,7 +2,8 @@ work
 *.pyc
 TODO
 boot_out.txt
-lib
+lib/adafruit*
+locale
 *secrets.py
 settings.py
 __pycache__
