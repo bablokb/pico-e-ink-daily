@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------
 # Display Agenda of the current day on a 5.7" ACEP e-paper display.
 #
-# This program needs an additional configuration file secrets.py
+# This program needs an additional configuration file settings.py
 # with wifi-credentials and server information.
 #
 # Author: Bernhard Bablok

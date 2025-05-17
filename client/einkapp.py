@@ -14,7 +14,7 @@ import builtins
 import time
 import board
 
-from secrets import secrets
+from settings import secrets, app_config
 
 # --- application class   ----------------------------------------------------
 
@@ -82,7 +82,7 @@ class EInkApp:
     start = time.monotonic()
     self.data = {}
     self.data["bat_level"] = self.bat_level()
-    self._cprovider.update_data(secrets.app_data)
+    self._cprovider.update_data(app_config)
 
   # --- update display   -----------------------------------------------------
 
@@ -107,8 +107,8 @@ class EInkApp:
 
   def shutdown(self):
     """ turn off device after setting next wakeup """
-    if self._rtc_ext and getattr(secrets.app_data,"time_table",None):
-      wakeup = self._rtc_ext.get_table_alarm(secrets.app_data.time_table)
+    if self._rtc_ext and getattr(app_config,"time_table",None):
+      wakeup = self._rtc_ext.get_table_alarm(app_config.time_table)
       self._rtc_ext.set_alarm(wakeup)
     self._shutdown()
 
