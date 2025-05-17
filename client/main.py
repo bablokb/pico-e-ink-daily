@@ -15,7 +15,6 @@
 
 import time
 start = time.monotonic()
-import supervisor
 from einkapp import EInkApp
 from agenda import Agenda                         # content-provider
 
