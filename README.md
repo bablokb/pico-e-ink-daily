@@ -42,46 +42,33 @@ Additionally, you have to install at least the following libraries:
 
   - adafruit_bitmap_font
   - adafruit_bus_device
+  - adafruit_connection_manager
   - adafruit_display_shapes
   - adafruit_display_text
   - adafruit_requests
+  - adafruit_ticks.mpy
 
 Depending on your e-ink display, additional libraries might be necessary.
 
-The client supports different hardware-setups. You have to configure the
-hardware you use in the file `config/<board.board_id>.py`. You will find
-various examples in the directory `config`, e.g. for Pimoroni's
-InkyFrame 5.7" display.
+The client supports different hardware-setups. See the section about
+hardware configuration below.
 
 
-secrets.py
-----------
+Configuration and Settings
+--------------------------
 
-For WLAN-credentials and other settings specific to you environment,
-you have to create the file `secrets.py`:
+The central configuration file for build and user specific settings is
+the file `client/settings.py`. The repository provides two examples:
+`client/settings_simple.py` and `client/settings_inky.py`.
 
-    class Settings:
-      pass
+These setting-files create three objects:
 
-    secrets = Settings()
+  - `secrets`: for credentials and other network related settings
+  - `hw_config`: for build-specific hardware configuration
+  - `app_config`: for application-specific configuration
 
-    secrets.ssid      = 'my-ssid'
-    secrets.password  = 'my-very-secret-password'
-    secrets.retry     = 2
-    secrets.debugflag = False
-    #secrets.channel   = 6       # optional
-    #secrets.timeout   = 10      # optional
-
-    secrets.time_url = 'http://worldtimeapi.org/api/ip'
-    secrets.net_update = True    # update time if necessary
-
-    secrets.app_data = Settings()
-    secrets.app_data.data_url = 'http://my-calendar2json-server-url'
-    secrets.app_data.time_table = ... # see below, optional
-
-The `app_data`-attribute contains application specific configs, in
-this case the url to the server-part and the time-table for automatic
-wakeup and refresh.
+Copy one of the template files to `client/settings.py` and adapt to
+your needs.
 
 
 Automatic Wakeup
@@ -89,7 +76,7 @@ Automatic Wakeup
 
 To enable automatic wakeup (with refresh), you must define a time-table:
 
-    secrets.app_data.time_table = [
+    app_config.time_table = [
       ((7,18,1),(0,59,15)),
       ((7,18,1),(0,59,15)),
       ((7,18,1),(0,59,15)),
@@ -120,15 +107,26 @@ Hardware Configuration
 
 There are two sources for hardware configuration:
 
-  - a board-specific configuration file in `client/config/`
-  - a user/setup specific configuration file in `client/hw_settings.py`
+  - a board-specific configuration file in `client/hal/`
+  - the user/setup specific configuration in `client/settings.py`
 
-The name of the board-specific configuration file must be the same
+"HAL" is an acronym for "hardware abstraction layer" and takes care
+of fixed hardware on the board (e.g. led vs. neopixel for blinking). Not
+every board needs a hal-file. Without a board-specific hal-file the
+system uses a default, which might already be sufficient.
+
+The name of the board-specific hal-file must be the same
 as the value returned by `board.board_id` (with '.' replaced by '_').
 For new boards, use one of the existing ones as a template.
 
-The user/setup specific configuration file has to provide an object
-`hw_setting`. Use one of the files `client/hw_settings_xxx.py` as a template.
+The user/setup specific configuration has to provide an object
+`hw_config`. Use one of the files `client/settings_xxx.py` as a
+template.  In the context of this application, only two things are
+necessary: a factory method for the display and a factory method for
+the keypad. Both are only required if the hal-file of the board does
+not already provide them. E.g. the Pimoroni Inky-Frame has a
+builtin-display and a set of buttons, so for this specific display the
+`hw_config` object can be empty (but it should exist).
 
 
 Hacking
@@ -143,4 +141,3 @@ is responsible to update and process data. Necessary methods are
   - `handle_exception()`
 
 See file `client/agenda.py` for the implementation of the agenda-application.
-
