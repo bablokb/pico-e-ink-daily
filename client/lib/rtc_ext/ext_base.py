@@ -174,7 +174,7 @@ class ExtBase:
 
   # --- update rtc   ---------------------------------------------------------
 
-  def update(self,new_time=None):
+  def update(self, force=False, new_time=None):
     """ update rtc """
 
     if new_time:
@@ -189,8 +189,8 @@ class ExtBase:
 
     # update internal rtc to valid date
     ExtBase.print_ts("rtc: int-rtc time",self._rtc_int.datetime)
-    if self._check_rtc(self._rtc_int):
-      if self._lost_power() or self._check_rtc(self._rtc_ext):
+    if force or self._check_rtc(self._rtc_int):
+      if force or self._lost_power() or self._check_rtc(self._rtc_ext):
         ExtBase.print_ts("rtc: ext-rtc time",self._rtc_ext.datetime)
         if not self._fetch_time():
           print("rtc: ext-rtc not updated from time-server")
