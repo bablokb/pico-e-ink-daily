@@ -158,7 +158,7 @@ class HalBase:
     nr = getattr(hw_config,name,None)
     if nr is None:
       return False
-    queue = self.get_keypad.events
+    queue = self.get_keypad().events
     event = queue.get()
     return event and event.pressed and event.key_number == nr
 
