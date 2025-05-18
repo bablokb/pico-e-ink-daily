@@ -157,26 +157,10 @@ class EInkApp:
   def run(self):
     """ main application loop """
 
-    # pygame test-environment
-    if self.is_pygame:
-      try:
-        self.update_data()
-        self._cprovider.process_data()
-      except Exception as ex:
-        self._cprovider.handle_exception(ex)
-      while True:
-        if self.display.check_quit():
-          self._shutdown()
-        time.sleep(0.5)
-
-    # running on real hardware
-    else:
-      try:
-        self.update_data()
-        self._cprovider.process_data()
-      except Exception as ex:
-        self._cprovider.handle_exception(ex)
-      self.shutdown()
-      self.msg("update finished, entering endless loop")
-      while True:
-        time.sleep(60)
+    try:
+      self.update_data()
+      self._cprovider.process_data()
+    except Exception as ex:
+      self._cprovider.handle_exception(ex)
+    self.shutdown()                        # pygame will instead wait for quit
+    self.deep_sleep()                      # in case shutdown is a noop
