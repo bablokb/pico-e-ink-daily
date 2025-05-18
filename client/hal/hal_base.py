@@ -155,7 +155,9 @@ class HalBase:
   def check_key(self,name):
     """ check if key is pressed """
 
-    nr = getattr(hw_config,name)
+    nr = getattr(hw_config,name,None)
+    if nr is None:
+      return False
     queue = self.get_keypad.events
     event = queue.get()
     return event and event.pressed and event.key_number == nr
