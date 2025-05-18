@@ -27,7 +27,7 @@ except:
       return 0
   gc = _gc()
 
-from settings import secrets, app_config
+from settings import secrets, hw_config, app_config
 
 # --- application class   ----------------------------------------------------
 
@@ -41,8 +41,13 @@ class EInkApp:
     self._debug = getattr(app_config, "debug", False)
     self._setup(with_rtc)  # setup hardware
     self.blink(0.1)
+
+    # check for power_off pin (unconditional, no automatic wake-up)
+    self._check_power_off()
+
+    # update internal rtc from external rtc/internet
     if self._rtc_ext:
-      self._rtc_ext.update()   # update internal rtc from external rtc/internet
+      self._rtc_ext.update(force=self.check_key("key_upd"))
     self._cprovider = contentprovider
     self._cprovider.app = self
 
@@ -77,6 +82,7 @@ class EInkApp:
     self.bat_level  = hal.impl.bat_level
     self.led        = hal.impl.led
     self.keypad     = hal.impl.get_keypad()
+    self.check_key  = hal.impl.check_key
     self.wifi       = hal.impl.wifi(self._debug)
     self._shutdown  = hal.impl.shutdown
     self.sleep      = hal.impl.sleep
@@ -87,6 +93,19 @@ class EInkApp:
         self._rtc_ext.set_wifi(self.wifi)
 
     gc.collect()
+
+  # --- check for power-off button press   -----------------------------------
+
+  def _check_power_off(self):
+    """ check power_off button """
+
+    if  self.check_key("key_off"):
+      blink_time = getattr(hw_config,"led_blinktime",0.1)
+      for _ in range(3):
+        self.blink(blink_time)
+      time.sleep(1)                   # extra time for button release
+      self._shutdown()
+      self.deep_sleep()               # in case shutdown is noop
 
   # --- print debug-message   ------------------------------------------------
 
@@ -147,7 +166,7 @@ class EInkApp:
         self._cprovider.handle_exception(ex)
       while True:
         if self.display.check_quit():
-          self.shutdown()
+          self._shutdown()
         time.sleep(0.5)
 
     # running on real hardware
