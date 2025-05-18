@@ -47,7 +47,7 @@ class EInkApp:
 
     # update internal rtc from external rtc/internet
     if self._rtc_ext:
-      self._rtc_ext.update(force=self.check_key("key_upd"))
+      self._rtc_ext.update(force=self._impl.check_key("key_upd"))
     self._cprovider = contentprovider
     self._cprovider.app = self
 
@@ -75,20 +75,14 @@ class EInkApp:
   def _setup(self,with_rtc):
     """ setup hardware """
 
-    hal = self._get_hal()
+    self._impl = self._get_hal().impl
     
-    self.display    = hal.impl.get_display()
+    self.display    = self._impl.get_display()
     self.is_pygame  = hasattr(self.display,"check_quit")
-    self.bat_level  = hal.impl.bat_level
-    self.led        = hal.impl.led
-    self.keypad     = hal.impl.get_keypad()
-    self.check_key  = hal.impl.check_key
-    self.wifi       = hal.impl.wifi(self._debug)
-    self._shutdown  = hal.impl.shutdown
-    self.sleep      = hal.impl.sleep
-    self._show      = hal.impl.show
+    self.wifi       = self._impl.wifi(self._debug)
+
     if with_rtc:
-      self._rtc_ext = hal.impl.get_rtc_ext()
+      self._rtc_ext = self._impl.get_rtc_ext()
       if self._rtc_ext:
         self._rtc_ext.set_wifi(self.wifi)
 
@@ -99,12 +93,12 @@ class EInkApp:
   def _check_power_off(self):
     """ check power_off button """
 
-    if  self.check_key("key_off"):
+    if  self._impl.check_key("key_off"):
       blink_time = getattr(hw_config,"led_blinktime",0.1)
       for _ in range(3):
         self.blink(blink_time)
       time.sleep(1)                   # extra time for button release
-      self._shutdown()
+      self._impl.shutdown()
       self.deep_sleep()               # in case shutdown is noop
 
   # --- print debug-message   ------------------------------------------------
@@ -121,7 +115,7 @@ class EInkApp:
 
     start = time.monotonic()
     self.data = {}
-    self.data["bat_level"] = self.bat_level()
+    self.data["bat_level"] = self._impl.bat_level()
     self._cprovider.update_data(app_config)
 
   # --- update display   -----------------------------------------------------
@@ -131,7 +125,7 @@ class EInkApp:
 
     # and show content on screen
     start = time.monotonic()
-    self._show(content)
+    self._impl.show(content)
     duration = time.monotonic()-start
     self.msg(f"show (HAL): {duration:f}s")
 
@@ -139,9 +133,9 @@ class EInkApp:
 
   def blink(self,duration):
     """ blink status-led once for the given duration """
-    self.led(1)
+    self._impl.led(1)
     time.sleep(duration)
-    self.led(0)
+    self._impl.led(0)
 
   # --- shutdown device   ----------------------------------------------------
 
@@ -150,7 +144,7 @@ class EInkApp:
     if self._rtc_ext and getattr(app_config,"time_table",None):
       wakeup = self._rtc_ext.get_table_alarm(app_config.time_table)
       self._rtc_ext.set_alarm(wakeup)
-    self._shutdown()
+    self._impl.shutdown()
 
   # --- main application loop   ----------------------------------------------
 
