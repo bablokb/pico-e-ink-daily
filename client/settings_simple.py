@@ -76,6 +76,9 @@ def _get_keypad(hal):
 hw_config.DISPLAY = _get_display
 hw_config.get_keypad = _get_keypad
 
+# default blink-time
+#hw_config.led_blinktime = 0.1
+
 # key-mappings (value is index into BTN_PINS)
 hw_config.key_on  = 0 # pin A
 hw_config.key_upd = 1 # pin B
