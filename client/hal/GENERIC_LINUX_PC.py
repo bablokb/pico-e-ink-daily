@@ -60,8 +60,11 @@ class HalPygame(HalBase):
     return WifiImpl(debug=debug)
 
   def shutdown(self):
-    """ leave program """
-    sys.exit(0)
+    """ leave program (here: wait for quit) """
+    if not self._display:
+      sys.exit(0)
+    else:
+      self.deep_sleep()
 
   def sleep(self,duration):
     if not self._display:
@@ -72,10 +75,20 @@ class HalPygame(HalBase):
     while time.monotonic()-start < duration:
       if self._display.check_quit():
         sys.exit(0)
-      time.sleep(0.1)
 
   def check_key(self,name):
     """ check if key is pressed (currently not supported) """
     return False
+
+  def deep_sleep(self,alarms=[]):
+    """ activate deep-sleep (not supported, fall back to idle) """
+
+    if not self._display:
+      super().deep_sleep(alarms)
+      return
+
+    while True:
+      if self._display.check_quit():
+        sys.exit(0)
 
 impl = HalPygame()

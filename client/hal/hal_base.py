@@ -161,3 +161,16 @@ class HalBase:
     queue = self.get_keypad.events
     event = queue.get()
     return event and event.pressed and event.key_number == nr
+
+  def deep_sleep(self,alarms=[]):
+    """ activate deep-sleep """
+
+    ds = getattr(hw_config,"deep_sleep",None)
+    if ds:
+      ds(alarms)
+    else:
+      try:
+        alarm.exit_and_deep_sleep_until_alarms(*alarms)
+      except:
+        while True:
+          time.sleep(1)
