@@ -13,19 +13,7 @@
 import builtins
 import time
 import board
-
-try:
-  import gc
-except:
-  # create dummy gc
-  class _gc:
-    @classmethod
-    def collect(cls):
-      pass
-    @classmethod
-    def mem_free(cls):
-      return 0
-  gc = _gc()
+import gc
 
 from settings import secrets, hw_config, app_config
 
