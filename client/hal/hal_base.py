@@ -48,6 +48,8 @@ class HalBase:
 
   def _init_led(self):
     """ initialize LED/Neopixel """
+    if hasattr(self,'_led') or hasattr(self,'_pixel'):
+      return
     if hasattr(board,'NEOPIXEL'):
       if not hasattr(self,'_pixel'):
         if hasattr(board,'NEOPIXEL_POWER'):
@@ -63,9 +65,6 @@ class HalBase:
       if led and not hasattr(self,'_led'):
         self._led = DigitalInOut(led)
         self._led.direction = Direction.OUTPUT
-
-    # replace method with noop
-    self._init_led = lambda: None
 
   def led(self,value,color=[255,0,0]):
     """ set status LED/Neopixel """
@@ -95,8 +94,8 @@ class HalBase:
 
   def wifi(self,debug=False):
     """ return wifi-interface """
-    from wifi_helper_builtin import WifiHelper
-    return WifiHelper(debug=debug)
+    from wifi_impl_builtin import WifiImpl
+    return WifiImpl(debug=debug)
 
   def get_display(self):
     """ return display """
@@ -139,7 +138,10 @@ class HalBase:
     nr = getattr(hw_config,name,None)
     if nr is None:
       return False
-    queue = self.get_keypad().events
+    keypad = self.get_keypad()
+    if not keypad:
+      return False
+    queue = keypad.events
     event = queue.get()
     return event and event.pressed and event.key_number == nr
 
