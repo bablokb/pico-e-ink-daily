@@ -8,6 +8,8 @@
 # ----------------------------------------------------------------------------
 
 import board
+import time
+import keypad
 from digitalio import DigitalInOut, Direction
 
 from hal.hal_base import HalBase
@@ -15,7 +17,7 @@ from hal.hal_base import HalBase
 class HALInkyFrame57(HalBase):
   """ InkyFrame 5.7 specific HAL-class """
 
-  def _init_led(self,value):
+  def _init_led(self):
     """ initialize LED/Neopixel """
     if not hasattr(self,"_led"):
       self._led = DigitalInOut(board.LED_ACT)
@@ -52,7 +54,6 @@ class HALInkyFrame57(HalBase):
     """ return configured keypad """
 
     if not self._keypad:
-      import keypad, time
       self._keypad = keypad.ShiftRegisterKeys(
         clock = board.SWITCH_CLK,
         data  = board.SWITCH_OUT,
@@ -63,4 +64,4 @@ class HALInkyFrame57(HalBase):
       )
     return self._keypad
 
-impl = HalInkyFrame57()
+impl = HALInkyFrame57()
