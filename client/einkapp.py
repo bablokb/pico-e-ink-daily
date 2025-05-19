@@ -148,10 +148,10 @@ class EInkApp:
       self._rtc_ext.set_alarm(wakeup)
     self._impl.shutdown()
 
-  # --- main application loop   ----------------------------------------------
+  # --- run single execution   -----------------------------------------------
 
-  def run(self):
-    """ main application loop """
+  def run_once(self):
+    """ single execution main processing """
 
     try:
       self.update_data()

@@ -20,4 +20,4 @@ from agenda import Agenda                         # content-provider
 
 app = EInkApp(Agenda(),with_rtc=True)
 print(f"startup: {time.monotonic()-start:f}s")
-app.run()
+app.run_once()
