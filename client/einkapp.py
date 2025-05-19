@@ -113,17 +113,17 @@ class EInkApp:
 
     start = time.monotonic()
 
-    self._display.root_group = content
+    self.display.root_group = content
 
-    if hasattr(self._display,"time_to_refresh"):
-      if self._display.time_to_refresh > 0.0:
+    if hasattr(self.display,"time_to_refresh"):
+      if self.display.time_to_refresh > 0.0:
         # ttr will be >0 only if system is on running on USB-power
-        time.sleep(self._display.time_to_refresh)
+        time.sleep(self.display.time_to_refresh)
 
     try:
-      self._display.refresh()
-      if hasattr(self._display,"busy"):
-        while self._display.busy:
+      self.display.refresh()
+      if hasattr(self.display,"busy"):
+        while self.display.busy:
           time.sleep(0.1)
     except RuntimeError:
       pass
