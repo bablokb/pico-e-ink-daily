@@ -42,11 +42,6 @@ class WifiImpl:
 class HalPygame(HalBase):
   """ GENERIC_LINUX_PC specific HAL-class """
 
-  def show(self,content):
-    """ show and refresh the display """
-    self._display.root_group = content
-    self._display.refresh()
-
   def bat_level(self):
     """ return battery level """
     return 3.6

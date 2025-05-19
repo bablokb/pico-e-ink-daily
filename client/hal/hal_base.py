@@ -107,25 +107,6 @@ class HalBase:
         self._display = self._display(self)
     return self._display
 
-  def show(self,content):
-    """ show and refresh the display """
-
-    self._display.root_group = content
-
-    if hasattr(self._display,"time_to_refresh"):
-      if self._display.time_to_refresh > 0.0:
-        # ttr will be >0 only if system is on running on USB-power
-        time.sleep(2*self._display.time_to_refresh)
-
-    while True:
-      try:
-        self._display.refresh()
-        while self._display.busy:
-          time.sleep(0.1)
-        break
-      except RuntimeError:
-        pass
-
   def get_rtc_ext(self,net_update=False):
     """ return external rtc, if available """
     try:

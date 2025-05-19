@@ -123,11 +123,25 @@ class EInkApp:
   def update_display(self,content):
     """ update display """
 
-    # and show content on screen
     start = time.monotonic()
-    self._impl.show(content)
+
+    self._display.root_group = content
+
+    if hasattr(self._display,"time_to_refresh"):
+      if self._display.time_to_refresh > 0.0:
+        # ttr will be >0 only if system is on running on USB-power
+        time.sleep(self._display.time_to_refresh)
+
+    try:
+      self._display.refresh()
+      if hasattr(self._display,"busy"):
+        while self._display.busy:
+          time.sleep(0.1)
+    except RuntimeError:
+      pass
+
     duration = time.monotonic()-start
-    self.msg(f"show (HAL): {duration:f}s")
+    self.msg(f"update display: {duration:f}s")
 
   # --- blink status-led   ---------------------------------------------------
 
