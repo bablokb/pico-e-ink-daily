@@ -54,7 +54,7 @@ class EInkApp:
       hal = builtins.__import__(hal_file,None,None,["impl"],0)
       self.msg("using board-specific implementation")
     except Exception as ex:
-      self.msg(f"info: no board specific HAL")
+      self.msg(f"info: no board specific HAL (ex: {ex})")
       hal_file = "hal.hal_default"
       hal = builtins.__import__(hal_file,None,None,["impl"],0)
       self.msg("info: using default implementation from HalBase")
@@ -71,8 +71,6 @@ class EInkApp:
 
     if with_rtc:
       self._rtc_ext = self._impl.get_rtc_ext()
-      if self._rtc_ext:
-        self._rtc_ext.set_wifi(self.wifi)
 
     gc.collect()
 
@@ -86,8 +84,8 @@ class EInkApp:
       for _ in range(3):
         self.blink(blink_time)
       time.sleep(1)                   # extra time for button release
-      self._impl.shutdown()
-      self.deep_sleep()               # in case shutdown is noop
+      self._impl.shutdown()           # direct shutdown, no wake-up
+      self._impl.deep_sleep()         # in case shutdown is noop
 
   # --- print debug-message   ------------------------------------------------
 
@@ -160,4 +158,4 @@ class EInkApp:
     except Exception as ex:
       self._cprovider.handle_exception(ex)
     self.shutdown()                        # pygame will instead wait for quit
-    self.deep_sleep()                      # in case shutdown is a noop
+    self._impl.deep_sleep()                # in case shutdown is a noop
