@@ -167,7 +167,8 @@ class EInkApp:
 
     try:
       self.update_data()
-      self._cprovider.process_data()
+      content = self._cprovider.create_view()
+      self.update_display(content)
     except Exception as ex:
       self._cprovider.handle_exception(ex)
     self.shutdown()                        # pygame will instead wait for quit

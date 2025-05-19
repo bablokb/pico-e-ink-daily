@@ -32,6 +32,7 @@ class Agenda:
   def __init__(self):
     """ constructor: create ressources """
 
+    self._view        = None
     self._time_font   = bitmap_font.load_font(UI_SETTINGS.TIME_FONT)
     self._text_font   = bitmap_font.load_font(UI_SETTINGS.TEXT_FONT)
     self._margin      = UI_SETTINGS.MARGIN
@@ -180,26 +181,29 @@ class Agenda:
 
   # --- create complete content   --------------------------------------------
 
-  def  process_data(self):
+  def create_view(self):
     """ create content """
+
+    if self._view:
+      return self._view
 
     frame = Frame(self.app.display,self.app.data)
 
-    g = frame.get_group()
+    self._view = frame.get_group()
     (header,h) = frame.get_header()
-    g.append(header)
+    self._view.append(header)
     gc.collect()
 
     events = self._get_events()
     if len(events):
       events.y = h + self._margin
-      g.append(events)
+      self._view.append(events)
     else:
       no_events = self._get_no_events()
-      g.append(no_events)
+      self._view.append(no_events)
 
-    g.append(frame.get_footer())
-    self.app.update_display(g)
+    self._view.append(frame.get_footer())
+    return self._view
 
   # --- handle exception   ---------------------------------------------------
 
