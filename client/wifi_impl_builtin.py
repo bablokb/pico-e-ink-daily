@@ -20,7 +20,7 @@ class WifiImpl:
 
   # --- constructor   --------------------------------------------------------
 
-  def __init__(self):
+  def __init__(self,debug=False):
     """ constructor """
 
     if not hasattr(secrets,'channel'):
@@ -28,6 +28,7 @@ class WifiImpl:
     if not hasattr(secrets,'timeout'):
       secrets.timeout = None
 
+    self._debug    = debug
     self._radio    = None
     self._pool     = None
     self._requests = None
@@ -49,7 +50,8 @@ class WifiImpl:
     if self._pool:
       return
 
-    print("connecting to %s" % secrets.ssid)
+    if self._debug:
+      print("connecting to %s" % secrets.ssid)
     retries = secrets.retry
     while True:
       try:
@@ -60,13 +62,15 @@ class WifiImpl:
                            )
         break
       except:
-        print("could not connect to %s" % secrets.ssid)
+        if self._debug:
+          print("could not connect to %s" % secrets.ssid)
         retries -= 1
         if retries == 0:
           raise
         time.sleep(1)
         continue
-    print("connected to %s" % secrets.ssid)
+    if self._debug:
+      print("connected to %s" % secrets.ssid)
     self._pool = socketpool.SocketPool(self._radio)
     self._requests = None
 
@@ -90,7 +94,8 @@ class WifiImpl:
   def get(self,url):
     """ process get-request """
     self.connect()
-    print(f"wifi: get({url})")
+    if self._debug:
+      print(f"wifi: get({url})")
     return self._get_request().get(url)
 
   # --- execute transmit-command   ------------------------------------------
@@ -98,7 +103,8 @@ class WifiImpl:
   def sendto(self,data,udp_ip,udp_port):
     """ send to given destination """
     self.connect()
-    print(f"wifi: send to {udp_ip}:{udp_port}")
+    if self._debug:
+      print(f"wifi: send to {udp_ip}:{udp_port}")
     with self._pool.socket(family=socketpool.SocketPool.AF_INET,
                            type=socketpool.SocketPool.SOCK_DGRAM) as socket:
       socket.sendto(data,(udp_ip,udp_port))
