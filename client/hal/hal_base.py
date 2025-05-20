@@ -65,6 +65,11 @@ class HalBase:
         self._led = DigitalInOut(led)
         self._led.direction = Direction.OUTPUT
 
+  def msg(self,*args):
+    """ print debug-message """
+    if self.debug:
+      print(*args)
+
   def led(self,value,color=[255,0,0]):
     """ set status LED/Neopixel """
     self._init_led()
@@ -135,14 +140,19 @@ class HalBase:
     """ check if key is pressed """
 
     nr = getattr(hw_config,name,None)
+    self.msg(f"check_key({name}): {nr=}")
     if nr is None:
       return False
     keypad = self.get_keypad()
     if not keypad:
       return False
     queue = keypad.events
-    event = queue.get()
-    return event and event.pressed and event.key_number == nr
+    ev = queue.get()
+    if ev:
+      self.msg(f"check_key({name}): pressed: {ev.pressed}, knr: {ev.key_number}")
+      return ev.pressed and ev.key_number == nr
+    else:
+      self.msg("ckeck_key({name}): empty event-queue")
 
   def deep_sleep(self,alarms=[]):
     """ activate deep-sleep """
