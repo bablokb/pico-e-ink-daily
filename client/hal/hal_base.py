@@ -37,13 +37,11 @@ class HalBase:
     self.MISO = self._get_attrib('MISO')
 
   def _get_attrib(self,attrib):
-    """ get attribute from board or from settings """
-    value = getattr(board,attrib,None)
-    if value is None:
-      try:
-        value = getattr(hw_config,attrib,None)
-      except:
-        pass
+    """ get attribute from hw_config, hal or board """
+    for obj in [hw_config, self, board]:
+      value = getattr(obj,attrib,None)
+      if not value is None:
+        return value
     return value
 
   def _init_led(self):
