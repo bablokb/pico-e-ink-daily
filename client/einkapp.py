@@ -64,6 +64,7 @@ class EInkApp:
     """ setup hardware """
 
     self._impl = self._get_hal().impl
+    self._impl.debug = self._debug
     
     self.display    = self._impl.get_display()
     self.is_pygame  = hasattr(self.display,"check_quit")
