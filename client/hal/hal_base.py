@@ -26,6 +26,7 @@ except:
 class HalBase:
   def __init__(self):
     """ constructor """
+    self.debug = False
     self._display = None
     self._keypad = None
     self.I2C  = self._get_attrib('I2C')
