@@ -17,11 +17,10 @@ from hal.hal_base import HalBase
 class HALInkyFrame57(HalBase):
   """ InkyFrame 5.7 specific HAL-class """
 
-  def _init_led(self):
-    """ initialize LED/Neopixel """
-    if not hasattr(self,"_led"):
-      self._led = DigitalInOut(board.LED_ACT)
-      self._led.direction = Direction.OUTPUT
+  def __init__(self):
+    """ constructor """
+    super().__init__()
+    self.LED = board.LED_ACT
 
   def get_rtc_ext(self,net_update=False):
     """ return external rtc, if available """
