@@ -123,6 +123,20 @@ class HalBase:
     if shutdown:
       shutdown()
 
+  def at_exit(self):
+    """ exit processing """
+    self.msg("hal_base.at_exit()")
+    try:
+      if not hasattr(board,"DISPLAY"):
+        import displayio
+        displayio.release_displays()
+    except:
+      pass
+    try:
+      self._keypad.deinit()
+    except:
+      pass
+
   def sleep(self,duration):
     """ sleep for the given duration in seconds """
     time.sleep(duration)
@@ -132,6 +146,8 @@ class HalBase:
     try:
       if not self._keypad:
         self._keypad = hw_config.get_keypad(self)
+        self._keypad.reset()
+        time.sleep(0.1)   # wait for keypad-scan (default scan-interval is 0.02)
       return self._keypad
     except:
       return None

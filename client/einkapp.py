@@ -147,6 +147,12 @@ class EInkApp:
       self._rtc_ext.set_alarm(wakeup)
     self._impl.shutdown()
 
+  # --- cleanup ressources at exit   -----------------------------------------
+
+  def at_exit(self):
+    """ cleanup ressources """
+    self._impl.at_exit()
+
   # --- run single execution   -----------------------------------------------
 
   def run_once(self):
