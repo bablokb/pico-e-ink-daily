@@ -19,6 +19,7 @@ class HalPicoPiBase(HalBase):
 
   def __init__(self):
     """ constructor """
+    super().__init__()
     self._done           = DigitalInOut(DONE_PIN)
     self._done.direction = Direction.OUTPUT
     self._done.value     = 0
