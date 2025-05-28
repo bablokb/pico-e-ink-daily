@@ -25,6 +25,7 @@ RST_PIN   = board.GPIO27
 CS_PIN    = board.CE0
 BUSY_PIN  = board.GPIO17
 BTN_PINS  = [board.GPIO5, board.GPIO6, board.GPIO16, board.GPIO24]
+LED_PIN   = board.GP14    # optional
 
 class Settings:
   pass
@@ -51,6 +52,8 @@ hw_config = Settings()
 
 def _get_inky_info():
   """ try to return tuple (width,height,color) """
+
+  # old 7.3 Inky-Impression not supported here
   COLOR = [None, 'black', 'red', 'yellow', None, 'acep7', 'e673', 'el133']
 
   EE_ADDR = 0x50
@@ -61,10 +64,12 @@ def _get_inky_info():
     i2c.write_then_readinto(bytes([0x00]),buffer)
 
   data = struct.unpack('<HHBBB22s',buffer)
-  if data[4] == 22:
-    return [data[0],data[1],'e673']
+  if data[4] == 14:
+    return [data[0],data[1],'acep7']
   elif data[4] == 21:
     return [data[0],data[1],'el133']
+  elif data[4] == 22:
+    return [data[0],data[1],'e673']
   else:
     return [data[0],data[1],COLOR[data[2]]]
 
@@ -100,6 +105,7 @@ def _get_keypad(hal):
 
 hw_config.DISPLAY = _get_display
 hw_config.get_keypad = _get_keypad
+hw_config.LED     = LED_PIN
 
 # default blink-time
 #hw_config.led_blinktime = 0.1
