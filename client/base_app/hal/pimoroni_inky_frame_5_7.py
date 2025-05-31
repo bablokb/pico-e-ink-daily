@@ -12,7 +12,7 @@ import time
 import keypad
 from digitalio import DigitalInOut, Direction
 
-from hal.hal_base import HalBase
+from .hal_base import HalBase
 
 class HALInkyFrame57(HalBase):
   """ InkyFrame 5.7 specific HAL-class """

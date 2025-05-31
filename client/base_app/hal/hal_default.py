@@ -7,5 +7,5 @@
 # Website: https://github.com/bablokb/cp-departure-monitor
 # ----------------------------------------------------------------------------
 
-from hal.hal_base import HalBase
+from .hal_base import HalBase
 impl = HalBase()

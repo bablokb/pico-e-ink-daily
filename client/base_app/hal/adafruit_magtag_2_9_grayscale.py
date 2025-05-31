@@ -14,7 +14,7 @@ from digitalio import DigitalInOut, Direction
 
 import neopixel
 
-from hal.hal_base import HalBase
+from .hal_base import HalBase
 
 class HalMagtag(HalBase):
   """ Magtag specific HAL-class """

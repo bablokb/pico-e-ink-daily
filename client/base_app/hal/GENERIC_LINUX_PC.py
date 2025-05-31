@@ -13,7 +13,7 @@ import time
 import socket
 import adafruit_requests
 
-from hal.hal_base import HalBase
+from .hal_base import HalBase
 
 class WifiImpl:
   """ request-implementation using sockets from CPython """

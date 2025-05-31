@@ -10,7 +10,7 @@
 import board
 from digitalio import DigitalInOut, Direction
 
-from hal.hal_base import HalBase
+from .hal_base import HalBase
 
 DONE_PIN  = board.GP4
 
