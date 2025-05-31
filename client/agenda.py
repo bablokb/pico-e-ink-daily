@@ -23,6 +23,8 @@ from adafruit_bitmap_font import bitmap_font
 from ui_settings import UI_SETTINGS, COLORS, UI_COLOR_MAP, UI_PALETTE
 from frame import Frame
 
+from settings import app_config
+
 # --- Agenda Class for layout   ----------------------------------------------
 
 class Agenda:
@@ -37,7 +39,15 @@ class Agenda:
     self._text_font   = bitmap_font.load_font(UI_SETTINGS.TEXT_FONT)
     self._margin      = UI_SETTINGS.MARGIN
     self._padding     = UI_SETTINGS.PADDING
-    self.app          = None
+    self._display     = None
+    self._data        = None
+    self._wifi        = None
+
+  # --- set wifi-object   ----------------------------------------------------
+
+  def set_wifi(self,wifi):
+    """ set wifi-object """
+    self._wifi   = wifi
 
   # --- helper method for debugging   ----------------------------------------
 
@@ -52,12 +62,12 @@ class Agenda:
 
     day_box = displayio.Group()
 
-    if self.app.data["weekday"]:
+    if self._data["weekday"]:
       bg_color = COLORS.BLACK
     else:
       bg_color = COLORS.RED
     day_font = bitmap_font.load_font(UI_SETTINGS.DAY_FONT)
-    day = label.Label(day_font,text=self.app.data["day"],
+    day = label.Label(day_font,text=self._data["day"],
                       color=UI_PALETTE[COLORS.WHITE],
                       background_color=UI_PALETTE[bg_color],
                       background_tight=True,
@@ -95,13 +105,13 @@ class Agenda:
     # create all agenda-entries
     events = displayio.Group()
     y = 0
-    for event in self.app.data["events"]:
+    for event in self._data["events"]:
       entry = displayio.Group()
       bg_color,color = UI_COLOR_MAP[event["color"]]
 
       # create background for entry
       background = Rectangle(pixel_shader=UI_PALETTE,x=self._margin,y=y,
-                             width=self.app.display.width - 2*self._margin,
+                             width=self._display.width - 2*self._margin,
                              height=h_box,
                              color_index=bg_color)
       entry.append(background)
@@ -158,8 +168,8 @@ class Agenda:
 
     f = open(UI_SETTINGS.NO_EVENTS, "rb")
     pic = displayio.OnDiskBitmap(f)
-    x = int((self.app.display.width-pic.width)/2)
-    y = int((self.app.display.height-pic.height)/2)
+    x = int((self._display.width-pic.width)/2)
+    y = int((self._display.height-pic.height)/2)
     t = displayio.TileGrid(pic, x=x,y=y, pixel_shader=UI_PALETTE)
     return t
 
@@ -170,10 +180,11 @@ class Agenda:
 
     start = time.monotonic()
     try:
-      if not self.app.wifi.radio or not self.app.wifi.radio.connected:
-        self.app.wifi.connect()
-      self.app.data.update(self.app.wifi.get(app_data.data_url).json())
-      self.app.wifi.radio.enabled = False
+      if not self._wifi.radio or not self._wifi.radio.connected:
+        self._wifi.connect()
+      app_data.update(self._wifi.get(app_config.data_url).json())
+      self._wifi.radio.enabled = False
+      self._data = app_data
       print(f"update_data (ok): {time.monotonic()-start:f}s")
     except Exception as ex:
       print(f"update_data (exception): {time.monotonic()-start:f}s")
@@ -181,14 +192,23 @@ class Agenda:
 
   # --- create complete content   --------------------------------------------
 
-  def create_view(self):
+  def create_ui(self,display):
     """ create content """
 
-    if self._view:
-      return self._view
+    # save display and return view (which might not exist)
+    # ui creation is deferred to update_ui
+    self._display = display
+    return self._view
 
-    frame = Frame(self.app.display,self.app.data)
+  # --- update ui   ----------------------------------------------------------
 
+  def update_ui(self):
+    """ update data: callback for Application """
+
+    # clear existing ui
+    self.clear_ui()
+
+    frame = Frame(self._display,self._data)
     self._view = frame.get_group()
     (header,h) = frame.get_header()
     self._view.append(header)
@@ -201,29 +221,40 @@ class Agenda:
     else:
       no_events = self._get_no_events()
       self._view.append(no_events)
-
     self._view.append(frame.get_footer())
-    return self._view
+
+  # --- clear UI and free memory   -------------------------------------------
+
+  def clear_ui(self):
+    """ clear UI """
+
+    if self._view:
+      for _ in range(len(self._view)):
+        self._view.pop()
+    self._view = None
+    gc.collect()
 
   # --- handle exception   ---------------------------------------------------
 
   def handle_exception(self,ex):
     """ handle exception """
 
-    traceback.print_exception(ex)
+    try:
+      traceback.print_exception(ex)
+    except:
+      print(''.join(traceback.format_exception(
+        None, ex, ex.__traceback__)))
 
     g = displayio.Group()
     background = Rectangle(pixel_shader=UI_PALETTE,x=0,y=0,
-                           width=self.app.display.width,
-                           height=self.app.display.height,
+                           width=self._display.width,
+                           height=self._display.height,
                            color_index=COLORS.WHITE)
     g.append(background)
 
     f = open(UI_SETTINGS.NO_NETWORK, "rb")
     pic = displayio.OnDiskBitmap(f)
-    x = int((self.app.display.width-pic.width)/2)
-    y = int((self.app.display.height-pic.height)/2)
+    x = int((self._display.width-pic.width)/2)
+    y = int((self._display.height-pic.height)/2)
     t = displayio.TileGrid(pic, x=x,y=y, pixel_shader=UI_PALETTE)
     g.append(t)
-
-    self.app.update_display(g)

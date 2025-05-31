@@ -25,11 +25,12 @@ def at_exit(app):
     app.at_exit()
 
 start = time.monotonic()
-from einkapp import EInkApp
-from agenda import Agenda                         # content-provider
+from base_app.ui_application import UIApplication
+from agenda import Agenda                  # data-provider and ui-provider
 
 app = None
 atexit.register(at_exit,app)
-app = EInkApp(Agenda(),with_rtc=True)
+agenda = Agenda()                                 
+app = UIApplication(agenda,agenda,with_rtc=True)
 print(f"startup: {time.monotonic()-start:f}s")
 app.run_once()

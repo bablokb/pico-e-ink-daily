@@ -19,11 +19,14 @@ from settings import secrets, hw_config, app_config
 
 # --- application class   ----------------------------------------------------
 
-class EInkApp:
+class UIApplication:
+
+  RED   = [255,0,0]
+  GREEN = [0,255,0]
 
   # --- constructor   --------------------------------------------------------
 
-  def __init__(self,contentprovider,with_rtc=True):
+  def __init__(self,dataprovider,uiprovider,with_rtc=True):
     """ constructor """
 
     self._debug = getattr(app_config, "debug", False)
@@ -36,8 +39,10 @@ class EInkApp:
     # update internal rtc from external rtc/internet
     if self._rtc_ext:
       self._rtc_ext.update(force=self._impl.check_key("key_upd"))
-    self._cprovider = contentprovider
-    self._cprovider.app = self
+    self._dataprovider = dataprovider
+    self._dataprovider.set_wifi(self._impl.wifi(debug=secrets.debugflag))
+    self._uiprovider = uiprovider
+    self.data = {}
 
   # --- get HAL   ------------------------------------------------------------
 
@@ -50,12 +55,12 @@ class EInkApp:
     """ read and return hal-object """
 
     try:
-      hal_file = "hal."+board.board_id.replace(".","_")
+      hal_file = "base_app.hal."+board.board_id.replace(".","_")
       hal = builtins.__import__(hal_file,None,None,["impl"],0)
       self.msg("using board-specific implementation")
     except Exception as ex:
       self.msg(f"info: no board specific HAL (ex: {ex})")
-      hal_file = "hal.hal_default"
+      hal_file = "base_app.hal.hal_default"
       hal = builtins.__import__(hal_file,None,None,["impl"],0)
       self.msg("info: using default implementation from HalBase")
     return hal
@@ -95,30 +100,83 @@ class EInkApp:
     if self._debug:
       print(text)
 
+  # --- blink status-led   ---------------------------------------------------
+
+  def blink(self,duration,color=RED):
+    """ blink status-led once for the given duration """
+    self._impl.led(1,color=color)
+    time.sleep(duration)
+    self._impl.led(0,color=color)
+
   # --- update data from server   --------------------------------------------
 
   def update_data(self):
     """ update data """
 
-    start = time.monotonic()
-    self.data = {}
+    self.blink(0.3,color=UIApplication.RED)
     self.data["bat_level"] = self._impl.bat_level()
-    self._cprovider.update_data(app_config)
+
+    start = time.monotonic()
+    self._dataprovider.update_data(self.data)
+    duration = time.monotonic()-start
+    self.blink(0.3,color=UIApplication.GREEN)
+    self.msg(f"update_data (dataprovider): {duration:f}s")
+
+  # --- handle data-exception   ----------------------------------------------
+
+  def handle_exception(self,ex):
+    """ pass exception of data-provider to ui-provider """
+
+    self.blink(0.3,color=UIApplication.RED)
+    start = time.monotonic()
+    self.update_display(self._uiprovider.handle_exception(ex))
+    duration = time.monotonic()-start
+    self.msg(f"handle_exception (uiprovider): {duration:f}s")
+
+  # --- create ui   ----------------------------------------------------------
+
+  def create_ui(self):
+    """ create UI. UI-provider might buffer UI for performance """
+
+    start = time.monotonic()
+    self._ui = self._uiprovider.create_ui(self.display)
+    duration = time.monotonic()-start
+    self.msg(f"create_content (uiprovider): {duration:f}s")
+
+  # --- free memory from UI   ------------------------------------------------
+
+  def free_ui_memory(self):
+    """ free memory used by UI and display """
+
+    if not self.is_pygame:
+      self.msg(f"free memory before clear of UI: {gc.mem_free()}")
+      self.display.root_group = None
+      self._uiprovider.clear_ui()
+      #gc.collect()
+      self.msg(f"free memory after clear of UI: {gc.mem_free()}")
 
   # --- update display   -----------------------------------------------------
 
-  def update_display(self,content):
+  def update_display(self,content=None):
     """ update display """
 
+    # update UI with current model
+    if not content:
+      start = time.monotonic()
+      self._uiprovider.update_ui()
+      duration = time.monotonic()-start
+      self.msg(f"update_ui (uiprovider): {duration:f}s")
+
+    # and show content on screen
     start = time.monotonic()
-
-    self.display.root_group = content
-
+    if content:
+      self.display.root_group = content
+    else:
+      self.display.root_group = self._ui
     if hasattr(self.display,"time_to_refresh"):
       if self.display.time_to_refresh > 0.0:
         # ttr will be >0 only if system is on running on USB-power
         time.sleep(self.display.time_to_refresh)
-
     try:
       self.display.refresh()
       if hasattr(self.display,"busy"):
@@ -126,17 +184,8 @@ class EInkApp:
           time.sleep(0.1)
     except RuntimeError:
       pass
-
     duration = time.monotonic()-start
     self.msg(f"update display: {duration:f}s")
-
-  # --- blink status-led   ---------------------------------------------------
-
-  def blink(self,duration):
-    """ blink status-led once for the given duration """
-    self._impl.led(1)
-    time.sleep(duration)
-    self._impl.led(0)
 
   # --- shutdown device   ----------------------------------------------------
 
@@ -159,10 +208,11 @@ class EInkApp:
     """ single execution main processing """
 
     try:
-      self.update_data()
-      content = self._cprovider.create_view()
-      self.update_display(content)
+      self.update_data()    # update data before UI is created
+      self.create_ui()      # ui-provider should buffer this for performance
+      self.update_display()
     except Exception as ex:
-      self._cprovider.handle_exception(ex)
+      self.handle_exception(ex)
+
     self.shutdown()                        # pygame will instead wait for quit
     self._impl.deep_sleep()                # in case shutdown is a noop
