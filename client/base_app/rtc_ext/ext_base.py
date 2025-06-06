@@ -31,7 +31,7 @@ class ExtBase:
     else:
       rtc_classfile = rtc_name.lower()
       rtc_classname = f"Ext{rtc_name}"
-    the_module = builtins.__import__(f"rtc_ext.{rtc_classfile}",
+    the_module = builtins.__import__(f"base_app.rtc_ext.{rtc_classfile}",
                                      None,None,[],0)
     rtc_class = getattr(the_module,rtc_classname)
     return rtc_class(bus,wifi,net_update)
