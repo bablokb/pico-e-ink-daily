@@ -7,7 +7,7 @@
 #-----------------------------------------------------------------------------
 
 import rtc
-from rtc_ext.ext_base import ExtBase
+from .ext_base import ExtBase
 from pcf85063a import PCF85063A as PCF_RTC
 
 # --- class ExtPCF85063   ----------------------------------------------------------

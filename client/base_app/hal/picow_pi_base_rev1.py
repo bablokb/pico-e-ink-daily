@@ -27,7 +27,7 @@ class HalPicoPiBase(HalBase):
   def get_rtc_ext(self,net_update=False):
     """ return external rtc, if available """
     try:
-      from rtc_ext.ext_base import ExtBase
+      from ..rtc_ext.ext_base import ExtBase
       i2c = board.I2C()
       return ExtBase.create("PCF8563",i2c,net_update=net_update)
     except:
@@ -35,6 +35,7 @@ class HalPicoPiBase(HalBase):
 
   def shutdown(self):
     """ turn off power by pulling GP4 high """
+    self.msg("HalPicoPiBase.shutdown() started")
     self._done.value = 1
     time.sleep(0.2)
     self._done.value = 0

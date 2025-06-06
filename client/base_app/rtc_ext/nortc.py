@@ -10,7 +10,7 @@
 
 import rtc
 from time import struct_time
-from rtc_ext.ext_base import ExtBase
+from .ext_base import ExtBase
 
 # --- class NoRTC   ----------------------------------------------------------
 

@@ -24,7 +24,7 @@ class HalBadger2040W(HalBase):
 
   def get_rtc_ext(self,net_update=False):
     """ return external rtc, if available """
-    from rtc_ext.ext_base import ExtBase
+    from ..rtc_ext.ext_base import ExtBase
     i2c = board.I2C()
     return ExtBase.create("PCF85063",i2c,net_update=net_update)
 

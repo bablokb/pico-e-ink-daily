@@ -7,7 +7,7 @@
 #-----------------------------------------------------------------------------
 
 import rtc
-from rtc_ext.ext_base import ExtBase
+from .ext_base import ExtBase
 from adafruit_pcf8523.pcf8523 import PCF8523 as PCF_RTC
 from adafruit_pcf8523.clock   import Clock
 

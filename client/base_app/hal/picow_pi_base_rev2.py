@@ -7,4 +7,4 @@
 # Website: https://github.com/bablokb/pico-e-ink-daily
 # ----------------------------------------------------------------------------
 
-from hal.picow_pi_base_rev1 import impl
+from .picow_pi_base_rev1 import impl

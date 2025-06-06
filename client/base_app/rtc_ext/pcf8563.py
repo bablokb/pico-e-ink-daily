@@ -7,7 +7,7 @@
 #-----------------------------------------------------------------------------
 
 import rtc
-from rtc_ext.ext_base import ExtBase
+from .ext_base import ExtBase
 from adafruit_pcf8563.pcf8563 import PCF8563 as PCF_RTC
 
 # --- class ExtPCF8563   ----------------------------------------------------------

@@ -120,7 +120,7 @@ class HalBase:
   def shutdown(self):
     """ shutdown system """
     shutdown = self._get_attrib('shutdown')
-    if shutdown:
+    if shutdown and shutdown != self.shutdown:
       shutdown()
 
   def at_exit(self):
