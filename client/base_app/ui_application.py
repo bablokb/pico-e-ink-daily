@@ -76,7 +76,7 @@ class UIApplication:
     self.wifi       = self._impl.wifi(self._debug)
 
     if with_rtc:
-      self._rtc_ext = self._impl.get_rtc_ext()
+      self._rtc_ext = self._impl.get_rtc_ext(net_update=True)
 
     gc.collect()
 
