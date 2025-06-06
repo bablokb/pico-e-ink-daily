@@ -139,9 +139,9 @@ class UIApplication:
     """ create UI. UI-provider might buffer UI for performance """
 
     start = time.monotonic()
-    self._ui = self._uiprovider.create_ui(self.display)
+    self._uiprovider.create_ui(self.display)
     duration = time.monotonic()-start
-    self.msg(f"create_content (uiprovider): {duration:f}s")
+    self.msg(f"create_ui (uiprovider): {duration:f}s")
 
   # --- free memory from UI   ------------------------------------------------
 
@@ -163,7 +163,7 @@ class UIApplication:
     # update UI with current model
     if not content:
       start = time.monotonic()
-      self._uiprovider.update_ui()
+      self._ui = self._uiprovider.update_ui()
       duration = time.monotonic()-start
       self.msg(f"update_ui (uiprovider): {duration:f}s")
 

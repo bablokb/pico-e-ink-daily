@@ -178,17 +178,11 @@ class Agenda:
   def update_data(self,app_data):
     """ update data """
 
-    start = time.monotonic()
-    try:
-      if not self._wifi.radio or not self._wifi.radio.connected:
-        self._wifi.connect()
-      app_data.update(self._wifi.get(app_config.data_url).json())
-      self._wifi.radio.enabled = False
-      self._data = app_data
-      print(f"update_data (ok): {time.monotonic()-start:f}s")
-    except Exception as ex:
-      print(f"update_data (exception): {time.monotonic()-start:f}s")
-      raise
+    if not self._wifi.radio or not self._wifi.radio.connected:
+      self._wifi.connect()
+    app_data.update(self._wifi.get(app_config.data_url).json())
+    self._wifi.radio.enabled = False
+    self._data = app_data
 
   # --- create complete content   --------------------------------------------
 
@@ -198,7 +192,6 @@ class Agenda:
     # save display and return view (which might not exist)
     # ui creation is deferred to update_ui
     self._display = display
-    return self._view
 
   # --- update ui   ----------------------------------------------------------
 
@@ -222,6 +215,7 @@ class Agenda:
       no_events = self._get_no_events()
       self._view.append(no_events)
     self._view.append(frame.get_footer())
+    return self._view
 
   # --- clear UI and free memory   -------------------------------------------
 
