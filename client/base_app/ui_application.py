@@ -31,7 +31,8 @@ class UIApplication:
 
     self._debug = getattr(app_config, "debug", False)
     self._setup(with_rtc)  # setup hardware
-    self.blink(0.1)
+    blink_time = getattr(hw_config,"led_blink_init",0.1)
+    self.blink(blink_time)
 
     # check for power_off pin (unconditional, no automatic wake-up)
     self._check_power_off()
@@ -76,7 +77,7 @@ class UIApplication:
     self.wifi       = self._impl.wifi(self._debug)
 
     if with_rtc:
-      self._rtc_ext = self._impl.get_rtc_ext(net_update=True)
+      self._rtc_ext = self._impl.get_rtc_ext(net_update=True,debug=self._debug)
 
     gc.collect()
 
@@ -86,7 +87,7 @@ class UIApplication:
     """ check power_off button """
 
     if  self._impl.check_key("key_off"):
-      blink_time = getattr(hw_config,"led_blinktime",0.1)
+      blink_time = getattr(hw_config,"led_blink_power_off",0.1)
       for _ in range(3):
         self.blink(blink_time)
       time.sleep(1)                   # extra time for button release
@@ -113,13 +114,14 @@ class UIApplication:
   def update_data(self):
     """ update data """
 
-    self.blink(0.3,color=UIApplication.RED)
+    blink_time = getattr(hw_config,"led_blink_data",0.3)
+    self.blink(blink_time,color=UIApplication.RED)
     self.data["bat_level"] = self._impl.bat_level()
 
     start = time.monotonic()
     self._dataprovider.update_data(self.data)
     duration = time.monotonic()-start
-    self.blink(0.3,color=UIApplication.GREEN)
+    self.blink(blink_time,color=UIApplication.GREEN)
     self.msg(f"update_data (dataprovider): {duration:f}s")
 
   # --- handle data-exception   ----------------------------------------------
@@ -127,7 +129,8 @@ class UIApplication:
   def handle_exception(self,ex):
     """ pass exception of data-provider to ui-provider """
 
-    self.blink(0.3,color=UIApplication.RED)
+    blink_time = getattr(hw_config,"led_blink_exception",0.6)
+    self.blink(blink_time,color=UIApplication.RED)
     start = time.monotonic()
     self.update_display(self._uiprovider.handle_exception(ex))
     duration = time.monotonic()-start
@@ -208,8 +211,8 @@ class UIApplication:
     """ single execution main processing """
 
     try:
-      self.update_data()    # update data before UI is created
       self.create_ui()      # ui-provider should buffer this for performance
+      self.update_data()
       self.update_display()
     except Exception as ex:
       self.handle_exception(ex)
