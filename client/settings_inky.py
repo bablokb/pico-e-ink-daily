@@ -108,7 +108,10 @@ hw_config.get_keypad = _get_keypad
 hw_config.LED     = LED_PIN
 
 # default blink-time
-#hw_config.led_blinktime = 0.1
+#hw_config.led_blink_init = 0.1
+#hw_config.led_blink_power_off = 0.1
+#hw_config.led_blink_data = 0.3
+#hw_config.led_blink_exception = 0.6
 
 # key-mappings (value is index into BTN_PINS)
 hw_config.key_on  = 0 # pin A
