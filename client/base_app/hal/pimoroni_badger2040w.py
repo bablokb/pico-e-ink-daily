@@ -22,11 +22,11 @@ class HalBadger2040W(HalBase):
       self._led = DigitalInOut(board.USER_LED)
       self._led.direction = Direction.OUTPUT
 
-  def get_rtc_ext(self,net_update=False):
+  def get_rtc_ext(self,net_update=False,debug=False):
     """ return external rtc, if available """
     from ..rtc_ext.ext_base import ExtBase
     i2c = board.I2C()
-    return ExtBase.create("PCF85063",i2c,net_update=net_update)
+    return ExtBase.create("PCF85063",i2c,net_update=net_update,debug=debug)
 
   def shutdown(self):
     """ turn off power by pulling enable pin low """

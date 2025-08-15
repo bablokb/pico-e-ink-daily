@@ -110,10 +110,10 @@ class HalBase:
         self._display = self._display(self)
     return self._display
 
-  def get_rtc_ext(self,net_update=False):
+  def get_rtc_ext(self,net_update=False,debug=False):
     """ return external rtc, if available """
     try:
-      return hw_config.get_rtc_ext(net_update=net_update)
+      return hw_config.get_rtc_ext(net_update=net_update,debug=debug)
     except:
       return None
 
