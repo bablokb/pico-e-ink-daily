@@ -23,7 +23,7 @@ class ExtBase:
   # --- factory for supported external RTCs   --------------------------------
 
   @classmethod
-  def create(cls,rtc_name,bus,wifi=None,net_update=False):
+  def create(cls,rtc_name,bus,wifi=None,net_update=False,debug=False):
     """ create ExtRTC-object for given RTC-name """
     if not rtc_name:
       rtc_classfile = "nortc"
@@ -34,30 +34,55 @@ class ExtBase:
     the_module = builtins.__import__(f"base_app.rtc_ext.{rtc_classfile}",
                                      None,None,[],0)
     rtc_class = getattr(the_module,rtc_classname)
-    return rtc_class(bus,wifi,net_update)
+    return rtc_class(bus,wifi,net_update,debug)
+
+  # --- constructor   --------------------------------------------------------
+
+  def __init__(self,rtc_ext,wifi=None,net_update=False,debug=debug):
+    """ constructor """
+
+    self._rtc_ext    = rtc_ext
+    self._wifi       = wifi
+    self._net_update = net_update
+    self._debug      = debug
+    self._rtc_int    = rtc.RTC()
+    self._init_rtc()             # basic settings, clear alarms etc.
+
+  # --- init wifi-object if not supplied   ----------------------------------
+
+  def _init_wifi(self):
+    """ init wifi with default implementation """
+
+    from wifi_impl_builtin import WifiImpl
+    self._wifi = WifiImpl()
+
+  # --- print debug-message   ------------------------------------------------
+
+  def _msg(self,text):
+    """ print (debug) message """
+    if self._debug:
+      print(text)
 
   # --- print struct_time   --------------------------------------------------
 
-  @classmethod
-  def print_ts(cls,label,ts):
+  def print_ts(self,label,ts):
     """ print epoch-time or struct_time """
     if isinstance(ts,int):
       ts = time.localtime(ts)
     if label:
-      print("%s: %04d-%02d-%02d %02d:%02d:%02d" %
-            (label,ts.tm_year,ts.tm_mon,ts.tm_mday,
-             ts.tm_hour,ts.tm_min,ts.tm_sec)
-            )
+      self._msg("%s: %04d-%02d-%02d %02d:%02d:%02d" %
+                (label,ts.tm_year,ts.tm_mon,ts.tm_mday,
+                 ts.tm_hour,ts.tm_min,ts.tm_sec)
+                )
     else:
-     return "%04d-%02d-%02d %02d:%02d:%02d" % (
-       ts.tm_year,ts.tm_mon,ts.tm_mday,
-       ts.tm_hour,ts.tm_min,ts.tm_sec
-       )
+      return "%04d-%02d-%02d %02d:%02d:%02d" % (
+        ts.tm_year,ts.tm_mon,ts.tm_mday,
+        ts.tm_hour,ts.tm_min,ts.tm_sec
+        )
 
   # --- get alarm-time   ----------------------------------------------------
 
-  @classmethod
-  def get_alarm_time(cls,d=None,h=None,m=None,s=None):
+  def get_alarm_time(self,d=None,h=None,m=None,s=None):
     """ get alarm-time. """
 
     # you can pass a combination of days, hours, minutes, seconds
@@ -73,13 +98,12 @@ class ExtBase:
     if sleep_time == 0:
       return
     alarm_time = time.localtime(time.time() + sleep_time)
-    ExtBase.print_ts("rtc: next wakeup",alarm_time)
+    self.print_ts("rtc: next wakeup",alarm_time)
     return alarm_time
 
   # --- get alarm from table   ---------------------------------------------
 
-  @classmethod
-  def get_table_alarm(cls,time_table):
+  def get_table_alarm(self,time_table):
     """ get alarm from time-table.
         This is a list of daily entries in
         the form
@@ -100,9 +124,9 @@ class ExtBase:
                              now_ts.tm_min*60 +
                              now_ts.tm_sec)
 
-    print("rtc: looking up next boot from time-table")
-    ExtBase.print_ts("rtc: now",now_ts)
-    print(f"rtc: weekday: {now_day}")
+    self._msg("rtc: looking up next boot from time-table")
+    self.print_ts("rtc: now",now_ts)
+    self._msg(f"rtc: weekday: {now_day}")
 
     # search table (wrap-around, starting from current weekday)
     for i in range(now_day,now_day+7,1):
@@ -120,7 +144,7 @@ class ExtBase:
           alarm_epoch = sod + h*3600 + m*60
           if alarm_epoch > now_epoch:
             next_alarm = time.localtime(alarm_epoch)
-            ExtBase.print_ts("rtc: next alarm",next_alarm)
+            self.print_ts("rtc: next alarm",next_alarm)
             return next_alarm
 
       # no suitable time-point today. Try next day
@@ -128,26 +152,6 @@ class ExtBase:
 
     # we should not be here
     raise Exception("no alarm from time-table")
-
-  # --- constructor   --------------------------------------------------------
-
-  def __init__(self,rtc_ext,wifi=None,net_update=False):
-    """ constructor """
-
-    self._rtc_ext    = rtc_ext
-    self._wifi       = wifi
-    self._net_update = net_update
-    
-    self._rtc_int = rtc.RTC()
-    self._init_rtc()             # basic settings, clear alarms etc.
-
-  # --- init wifi-object if not supplied   ----------------------------------
-
-  def _init_wifi(self):
-    """ init wifi with default implementation """
-
-    from wifi_impl_builtin import WifiImpl
-    self._wifi = WifiImpl()
 
   # --- check state of external RTC   ---------------------------------------
 
@@ -184,14 +188,14 @@ class ExtBase:
       print("rtc: updating RTCs from provided time")
       self._rtc_ext.datetime = new_time
       self._rtc_int.datetime = new_time
-      ExtBase.print_ts("rtc: new time",new_time)
+      self.print_ts("rtc: new time",new_time)
       return ExtBase.TIME_SOURCE_SET
 
     # update internal rtc to valid date
-    ExtBase.print_ts("rtc: int-rtc time",self._rtc_int.datetime)
+    self.print_ts("rtc: int-rtc time",self._rtc_int.datetime)
     if force or self._check_rtc(self._rtc_int):
       if force or self._lost_power() or self._check_rtc(self._rtc_ext):
-        ExtBase.print_ts("rtc: ext-rtc time",self._rtc_ext.datetime)
+        self.print_ts("rtc: ext-rtc time",self._rtc_ext.datetime)
         if not self._fetch_time():
           print("rtc: ext-rtc not updated from time-server")
           print("rtc: setting ext-rtc to 2022-01-01 12:00:00")
@@ -205,7 +209,7 @@ class ExtBase:
       print("rtc: updating internal rtc from external rtc")
       ext_ts = self._rtc_ext.datetime   # needs two statements!
       self._rtc_int.datetime = ext_ts
-      ExtBase.print_ts("rtc: new time",ext_ts)
+      self.print_ts("rtc: new time",ext_ts)
     else:
       # this will typically happen when starting from Thonny
       print("rtc: assuming valid rtc int")
