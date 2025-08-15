@@ -252,3 +252,4 @@ class Agenda:
     y = int((self._display.height-pic.height)/2)
     t = displayio.TileGrid(pic, x=x,y=y, pixel_shader=UI_PALETTE)
     g.append(t)
+    return g
