@@ -25,8 +25,12 @@ def at_exit(app):
     app.at_exit()
 
 start = time.monotonic()
+from settings import app_config
 from base_app.ui_application import UIApplication
 from agenda import Agenda                  # data-provider and ui-provider
+
+if getattr(app_config,"debug",False):
+  time.sleep(5)
 
 app = None
 atexit.register(at_exit,app)
