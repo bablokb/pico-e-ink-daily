@@ -98,7 +98,7 @@ class HalBase:
 
   def wifi(self,debug=False):
     """ return wifi-interface """
-    from wifi_impl_builtin import WifiImpl
+    from ..wifi_impl_builtin import WifiImpl
     return WifiImpl(debug=debug)
 
   def get_display(self):
