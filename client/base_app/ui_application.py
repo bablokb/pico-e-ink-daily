@@ -192,11 +192,17 @@ class UIApplication:
 
   # --- shutdown device   ----------------------------------------------------
 
-  def shutdown(self):
+  def shutdown(self,rc):
     """ turn off device after setting next wakeup """
-    if self._rtc_ext and getattr(app_config,"time_table",None):
-      wakeup = self._rtc_ext.get_table_alarm(app_config.time_table)
-      self._rtc_ext.set_alarm(wakeup)
+    self.msg(f"shutdown with {rc=}:")
+    if rc:
+      if self._rtc_ext and getattr(app_config,"time_table",None):
+        wakeup = self._rtc_ext.get_table_alarm(app_config.time_table)
+        self._rtc_ext.set_alarm(wakeup)
+      else:
+        self.msg("could not configure wakeup")
+    else:
+      self.msg("not configuring wakeup due to exception")
     self._impl.shutdown()
 
   # --- cleanup ressources at exit   -----------------------------------------
@@ -214,8 +220,14 @@ class UIApplication:
       self.create_ui()      # ui-provider should buffer this for performance
       self.update_data()
       self.update_display()
-    except Exception as ex:
-      self.handle_exception(ex)
+      rc = True
+    except Exception as ex1:
+      self.msg(f"failed: {ex1=}")
+      try:
+        self.handle_exception(ex1)
+      except Exception as ex2:
+        self.msg(f"failed to handle exception: {ex2=}")
+      rc = False
 
-    self.shutdown()                        # pygame will instead wait for quit
+    self.shutdown(rc)                      # pygame will instead wait for quit
     self._impl.deep_sleep()                # in case shutdown is a noop
