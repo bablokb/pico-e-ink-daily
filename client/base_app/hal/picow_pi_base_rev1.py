@@ -30,7 +30,8 @@ class HalPicoPiBase(HalBase):
       from ..rtc_ext.ext_base import ExtBase
       i2c = board.I2C()
       return ExtBase.create("PCF8563",i2c,net_update=net_update,debug=debug)
-    except:
+    except Exception as ex:
+      self.msg(f"HalPicoPiBase.get_rtc_ext(): failed with {ex=}")
       return None
 
   def shutdown(self):
