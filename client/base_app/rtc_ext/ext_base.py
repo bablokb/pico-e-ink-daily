@@ -38,7 +38,7 @@ class ExtBase:
 
   # --- constructor   --------------------------------------------------------
 
-  def __init__(self,rtc_ext,wifi=None,net_update=False,debug=debug):
+  def __init__(self,rtc_ext,wifi=None,net_update=False,debug=False):
     """ constructor """
 
     self._rtc_ext    = rtc_ext
@@ -53,7 +53,7 @@ class ExtBase:
   def _init_wifi(self):
     """ init wifi with default implementation """
 
-    from wifi_impl_builtin import WifiImpl
+    from ..wifi_impl_builtin import WifiImpl
     self._wifi = WifiImpl()
 
   # --- print debug-message   ------------------------------------------------

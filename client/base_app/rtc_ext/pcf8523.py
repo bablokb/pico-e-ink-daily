@@ -17,12 +17,12 @@ class ExtPCF8523(ExtBase):
 
   # --- constructor   --------------------------------------------------------
 
-  def __init__(self,i2c,wifi=None,net_update=False):
+  def __init__(self,i2c,wifi=None,net_update=False,debug=False):
     """ constructor """
 
     rtc = PCF_RTC(i2c)
     self._clock = Clock(rtc.i2c_device)
-    super().__init__(rtc,wifi,net_update)
+    super().__init__(rtc,wifi,net_update,debug)
 
   # --- init rtc   -----------------------------------------------------------
 
