@@ -11,7 +11,7 @@
 
 PACKAGES="python3-pip python3-tz python3-lxml libxslt1.1"
 PACKAGES_PIP="caldav"
-PROJECT="pico-e-ink-daily"
+PROJECT="py-calendar2json"
 
 # --- basic packages   ------------------------------------------------------
 
@@ -63,7 +63,7 @@ install_files() {
     cp "$f" "$target"
     chown root:root "$target"
   done
-  chmod 755 /usr/local/sbin/calendar2json.py
+  chmod 755 "/usr/local/sbin/$PROJECT.py"
 
   # create configuration file
   if [ ! -f "/etc/${PROJECT}.json" ]; then
